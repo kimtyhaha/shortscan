@@ -1,7 +1,43 @@
 {% extends "base.html" %}
 
-{% block title %}{{ name_kr }} ({{ symbol }}) 공매도 비율 현황 — 숏스캔{% endblock %}
-{% block description %}{{ name_kr }}({{ symbol }})의 최근 공매도 비율 추이. FINRA 보고 기준 일별 공매도 거래량 및 분석 요약.{% endblock %}
+{% block title %}{{ name_kr }} ({{ symbol }}) 공매도 비율 {{ latest_ratio }}% — 숏스캔{% endblock %}
+{% block description %}{{ name_kr }}({{ symbol }}) 공매도 비율 {{ latest_ratio }}% ({{ trade_date }} 기준). 전일 대비 {{ '%+.1f' | format(change) }}%p. FINRA 보고 기준 최근 10거래일 추이 및 자동 분석.{% endblock %}
+{% block keywords %}{{ symbol }} 공매도,{{ name_kr }} 공매도,{{ symbol }} 공매도 비율,{{ name_kr }} 공매도 현황,{{ symbol }} short interest{% endblock %}
+{% block canonical %}/stock/{{ symbol }}.html{% endblock %}
+
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ name_kr }} ({{ symbol }}) 공매도 비율 {{ latest_ratio }}% — 숏스캔{% endblock %}
+{% block og_desc %}{{ name_kr }} 공매도 비율 {{ latest_ratio }}%, 전일 대비 {{ '%+.1f' | format(change) }}%p. {{ trade_date }} 기준 FINRA 데이터.{% endblock %}
+{% block og_url %}/stock/{{ symbol }}.html{% endblock %}
+{% block tw_title %}{{ name_kr }} ({{ symbol }}) 공매도 {{ latest_ratio }}%{% endblock %}
+{% block tw_desc %}전일 대비 {{ '%+.1f' | format(change) }}%p · 10일 평균 {{ avg_ratio }}% · {{ trade_date }}{% endblock %}
+
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "{{ name_kr }} ({{ symbol }}) 공매도 비율 데이터",
+  "description": "{{ name_kr }}의 FINRA 보고 기준 일별 공매도 거래량 비율. {{ trade_date }} 기준 {{ latest_ratio }}%.",
+  "url": "https://shortscan.pages.dev/stock/{{ symbol }}.html",
+  "dateModified": "{{ trade_date }}",
+  "inLanguage": "ko",
+  "license": "https://www.finra.org/rules-guidance/notices/information-notice-05122008",
+  "creator": { "@type": "Organization", "name": "숏스캔" },
+  "isBasedOn": { "@type": "DataCatalog", "name": "FINRA Short Sale Volume Data", "url": "https://www.finra.org/investors/learn-to-invest/advanced-investing/short-selling/short-sale-volume-data" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "홈",    "item": "https://shortscan.pages.dev/" },
+    { "@type": "ListItem", "position": 2, "name": "{{ name_kr }} ({{ symbol }})", "item": "https://shortscan.pages.dev/stock/{{ symbol }}.html" }
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="container">

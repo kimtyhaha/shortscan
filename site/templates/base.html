@@ -3,11 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>{% block title %}숏스캔 — 미국 주식 공매도 현황{% endblock %}</title>
   <meta name="description" content="{% block description %}FINRA 데이터 기반 미국 주식 일별 공매도 비율 현황. 테슬라, 엔비디아, 애플 등 주요 종목 공매도 추이를 매일 업데이트합니다.{% endblock %}">
+  <meta name="keywords"     content="{% block keywords %}공매도,공매도 비율,숏스퀴즈,미국주식 공매도,FINRA,short interest{% endblock %}">
+  <meta name="robots"       content="index, follow">
+  <link rel="canonical"     href="https://shortscan.pages.dev{% block canonical %}/{% endblock %}">
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="{% block og_type %}website{% endblock %}">
+  <meta property="og:site_name"   content="숏스캔">
+  <meta property="og:title"       content="{% block og_title %}숏스캔 — 미국 주식 공매도 현황{% endblock %}">
+  <meta property="og:description" content="{% block og_desc %}FINRA 데이터 기반 미국 주식 일별 공매도 비율. 급증 종목과 숏스퀴즈 후보를 매일 업데이트합니다.{% endblock %}">
+  <meta property="og:url"         content="https://shortscan.pages.dev{% block og_url %}/{% endblock %}">
+  <meta property="og:locale"      content="ko_KR">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary">
+  <meta name="twitter:title"       content="{% block tw_title %}숏스캔 — 미국 주식 공매도 현황{% endblock %}">
+  <meta name="twitter:description" content="{% block tw_desc %}FINRA 기반 일별 공매도 비율. 급증 종목·숏스퀴즈 후보 매일 업데이트.{% endblock %}">
+
+  <!-- JSON-LD -->
+  {% block jsonld %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "숏스캔",
+    "url": "https://shortscan.pages.dev",
+    "description": "FINRA 데이터 기반 미국 주식 공매도 비율 현황 사이트",
+    "inLanguage": "ko",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://shortscan.pages.dev/stock/{ticker}.html",
+      "query-input": "required name=ticker"
+    }
+  }
+  </script>
+  {% endblock %}
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

@@ -1,7 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}숏스캔 — 미국 주식 공매도 비율 실시간 현황{% endblock %}
-{% block description %}FINRA 데이터 기반 미국 주식 일별 공매도 비율. 급증 종목 TOP 20, 숏스퀴즈 후보를 매일 업데이트합니다.{% endblock %}
+{% block title %}숏스캔 — 미국 주식 공매도 비율 현황 ({{ trade_date }}){% endblock %}
+{% block description %}{{ trade_date }} 기준 미국 주식 공매도 비율 현황. 시장 평균 {{ avg_ratio }}%, 급증 종목 {{ surge_count }}개. FINRA 데이터 기반 무료 공매도 정보.{% endblock %}
+{% block keywords %}미국주식 공매도,공매도 비율,공매도 현황,숏스퀴즈,FINRA 공매도,테슬라 공매도,엔비디아 공매도,공매도 급증{% endblock %}
+{% block og_title %}미국 주식 공매도 현황 — {{ trade_date }} 기준 시장 평균 {{ avg_ratio }}%{% endblock %}
+{% block og_desc %}급증 종목 {{ surge_count }}개, 숏스퀴즈 후보 {{ squeeze_count }}개. FINRA 일별 공매도 데이터 무료 제공.{% endblock %}
+{% block tw_title %}미국 공매도 현황 {{ trade_date }} · 시장평균 {{ avg_ratio }}%{% endblock %}
+{% block tw_desc %}급증 {{ surge_count }}종목 · 숏스퀴즈 후보 {{ squeeze_count }}종목 · FINRA 데이터{% endblock %}
+
+{% block jsonld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "미국 주식 공매도 비율 현황",
+  "url": "https://shortscan.pages.dev/",
+  "dateModified": "{{ trade_date }}",
+  "description": "FINRA 보고 기준 미국 주식 일별 공매도 비율. {{ trade_date }} 기준 시장 평균 {{ avg_ratio }}%.",
+  "inLanguage": "ko",
+  "publisher": { "@type": "Organization", "name": "숏스캔", "url": "https://shortscan.pages.dev" }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="container">

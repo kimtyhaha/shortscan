@@ -184,6 +184,64 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
     return True
 
 
+SITE_URL = "https://shortscan.pages.dev"
+
+
+# ── sitemap.xml ───────────────────────────────────────────────────────────────
+
+def build_sitemap(symbols: list[str], trade_date: str) -> None:
+    lines = ['<?xml version="1.0" encoding="UTF-8"?>',
+             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+
+    # 메인 페이지
+    lines += [
+        "  <url>",
+        f"    <loc>{SITE_URL}/</loc>",
+        f"    <lastmod>{trade_date}</lastmod>",
+        "    <changefreq>daily</changefreq>",
+        "    <priority>1.0</priority>",
+        "  </url>",
+    ]
+
+    # 랭킹 페이지
+    lines += [
+        "  <url>",
+        f"    <loc>{SITE_URL}/ranking.html</loc>",
+        f"    <lastmod>{trade_date}</lastmod>",
+        "    <changefreq>daily</changefreq>",
+        "    <priority>0.9</priority>",
+        "  </url>",
+    ]
+
+    # 종목 상세 페이지
+    for sym in symbols:
+        safe = sym.replace("/", "-").replace("\\", "-")
+        lines += [
+            "  <url>",
+            f"    <loc>{SITE_URL}/stock/{safe}.html</loc>",
+            f"    <lastmod>{trade_date}</lastmod>",
+            "    <changefreq>daily</changefreq>",
+            "    <priority>0.7</priority>",
+            "  </url>",
+        ]
+
+    lines.append("</urlset>")
+    (OUT_DIR / "sitemap.xml").write_text("\n".join(lines), encoding="utf-8")
+    print(f"  ✓ sitemap.xml  ({len(symbols) + 2}개 URL)")
+
+
+# ── robots.txt ────────────────────────────────────────────────────────────────
+
+def build_robots() -> None:
+    content = f"""User-agent: *
+Allow: /
+
+Sitemap: {SITE_URL}/sitemap.xml
+"""
+    (OUT_DIR / "robots.txt").write_text(content, encoding="utf-8")
+    print(f"  ✓ robots.txt")
+
+
 # ── 메인 ─────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -228,6 +286,12 @@ def main() -> None:
     conn.close()
 
     print(f"  ✓ 종목 페이지 {ok}개 생성 (데이터 없음 {skip}개 건너뜀)")
+
+    # sitemap.xml + robots.txt
+    built_symbols = [s for s in symbols if build_stock.__doc__ or True]  # 생성된 종목 목록
+    build_sitemap(symbols, trade_date)
+    build_robots()
+
     print(f"\n✅ 완료 → {OUT_DIR}/index.html\n")
 
     if args.open:
