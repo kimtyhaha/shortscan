@@ -135,6 +135,9 @@
 
 </div>
 
+{% endblock %}
+
+{% block scripts %}
 <script>
 const labels = {{ labels | tojson }};
 const values = {{ values | tojson }};
@@ -144,29 +147,15 @@ const colors = values.map((_, i) =>
 const borderColors = values.map((_, i) =>
   i === values.length - 1 ? 'rgba(229,57,53,1)' : 'rgba(229,57,53,0.5)'
 );
-
 new Chart(document.getElementById('ratioChart'), {
   type: 'bar',
-  data: {
-    labels,
-    datasets: [{
-      data: values,
-      backgroundColor: colors,
-      borderColor: borderColors,
-      borderWidth: 1.5,
-      borderRadius: 3,
-    }]
-  },
+  data: { labels, datasets: [{ data: values, backgroundColor: colors, borderColor: borderColors, borderWidth: 1.5, borderRadius: 3 }] },
   options: {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
-      y: {
-        beginAtZero: false,
-        ticks: { callback: v => v + '%', font: { size: 11 } },
-        grid: { color: '#f3f4f6' }
-      },
+      y: { beginAtZero: false, ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: '#f3f4f6' } },
       x: { ticks: { font: { size: 11 } }, grid: { display: false } }
     }
   }
