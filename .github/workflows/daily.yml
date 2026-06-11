@@ -1,0 +1,72 @@
+name: Daily Data Collection & Deploy
+
+on:
+  schedule:
+    # 매일 01:00 UTC = 미국 동부 오후 9시 (EDT, 장 마감 5시간 후)
+    # FINRA 파일은 장 마감(4pm ET) 후 약 2-4시간 내 공개됨
+    - cron: "0 1 * * 2-6"   # 화~토 (미국 월~금 장 마감 기준)
+
+  workflow_dispatch:         # 수동 실행 허용
+    inputs:
+      backfill:
+        description: "백필 일수 (0 = 최신 1일만)"
+        required: false
+        default: "0"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ── 체크아웃 ─────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── SQLite DB 캐시 (매일 누적) ──────────────────────────
+      - name: Restore DB cache
+        uses: actions/cache@v4
+        with:
+          path: data/shortscan.db
+          key: shortscan-db-${{ github.run_id }}
+          restore-keys: |
+            shortscan-db-
+
+      # ── Python 설정 ──────────────────────────────────────────
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # ── 데이터 수집 ──────────────────────────────────────────
+      - name: Create data directory
+        run: mkdir -p data
+
+      - name: Collect FINRA data (backfill)
+        if: ${{ github.event.inputs.backfill != '0' && github.event.inputs.backfill != '' }}
+        run: python main.py --backfill ${{ github.event.inputs.backfill }}
+
+      - name: Collect FINRA data (daily)
+        if: ${{ github.event.inputs.backfill == '0' || github.event.inputs.backfill == '' }}
+        run: python main.py
+
+      # ── 사이트 생성 ──────────────────────────────────────────
+      - name: Generate static site
+        run: python site/generator.py
+
+      - name: Show generated file count
+        run: |
+          echo "index.html: $(wc -c < site/out/index.html) bytes"
+          echo "Stock pages: $(ls site/out/stock/ | wc -l)"
+
+      # ── Cloudflare Pages 배포 ────────────────────────────────
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy site/out --project-name=shortscan --commit-dirty=true

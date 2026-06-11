@@ -1,3 +1,7 @@
 data/
 __pycache__/
 *.db
+*.pyc
+.env
+# site/out/ 은 CI에서 생성 → 로컬 빌드 결과물은 트래킹 제외
+site/out/
