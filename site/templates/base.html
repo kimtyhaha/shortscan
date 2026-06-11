@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}숏스캔 — 미국 주식 공매도 현황{% endblock %}</title>
+  <meta name="description" content="{% block description %}FINRA 데이터 기반 미국 주식 일별 공매도 비율 현황. 테슬라, 엔비디아, 애플 등 주요 종목 공매도 추이를 매일 업데이트합니다.{% endblock %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:    #e53935;
+      --red-bg: #fdecea;
+      --blue:   #1976d2;
+      --blue-bg:#e3f0fb;
+      --gray:   #6b7280;
+      --border: #e5e7eb;
+      --bg:     #f9fafb;
+      --white:  #ffffff;
+      --text:   #111827;
+      --text2:  #374151;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── 헤더 ──────────────────────────────── */
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo { font-size: 18px; font-weight: 700; color: var(--red); text-decoration: none; }
+    .logo span { color: var(--text); }
+    nav a { color: var(--gray); text-decoration: none; font-size: 13px; margin-left: 20px; }
+    nav a:hover { color: var(--text); }
+
+    /* ── 레이아웃 ──────────────────────────── */
+    .container { max-width: 900px; margin: 0 auto; padding: 32px 20px; }
+
+    /* ── 카드 ──────────────────────────────── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .card-label { font-size: 12px; color: var(--gray); font-weight: 500; margin-bottom: 6px; }
+    .card-value { font-size: 28px; font-weight: 700; }
+    .card-value.red  { color: var(--red); }
+    .card-value.blue { color: var(--blue); }
+    .card-sub { font-size: 12px; color: var(--gray); margin-top: 4px; }
+
+    /* ── 섹션 제목 ─────────────────────────── */
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── 랭킹 리스트 ──────────────────────── */
+    .rank-list { list-style: none; }
+    .rank-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .rank-item:last-child { border-bottom: none; }
+    .rank-no  { font-size: 13px; color: var(--gray); width: 22px; text-align: right; flex-shrink: 0; }
+    .rank-symbol { font-size: 15px; font-weight: 700; width: 72px; flex-shrink: 0; }
+    .rank-name   { color: var(--gray); font-size: 13px; flex: 1; }
+    .rank-ratio  { font-size: 16px; font-weight: 700; color: var(--red); width: 52px; text-align: right; }
+    .rank-badge  {
+      font-size: 12px; font-weight: 700;
+      padding: 2px 7px; border-radius: 12px;
+      background: var(--red-bg); color: var(--red);
+      flex-shrink: 0;
+    }
+    .rank-badge.blue { background: var(--blue-bg); color: var(--blue); }
+    .rank-vol { font-size: 11px; color: var(--gray); width: 48px; text-align: right; flex-shrink: 0; }
+
+    /* ── 알림 박스 ─────────────────────────── */
+    .info-box {
+      background: var(--blue-bg);
+      border-left: 4px solid var(--blue);
+      border-radius: 4px;
+      padding: 14px 18px;
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+    .warn-box {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      border-radius: 4px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: #78350f;
+      margin-top: 24px;
+    }
+
+    /* ── 차트 ──────────────────────────────── */
+    .chart-wrap { position: relative; height: 200px; margin: 8px 0 4px; }
+
+    /* ── 광고 플레이스홀더 ─────────────────── */
+    .ad-slot {
+      background: #f3f4f6;
+      border: 1px dashed #d1d5db;
+      border-radius: 6px;
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      font-size: 12px;
+      margin: 24px 0;
+    }
+
+    /* ── 종목 검색바 ──────────────────────── */
+    .search-wrap { margin-bottom: 24px; }
+    .search-wrap input {
+      width: 100%;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      background: var(--white);
+      outline: none;
+    }
+    .search-wrap input:focus { border-color: var(--blue); }
+
+    /* ── 날짜 헤더 ─────────────────────────── */
+    .date-header {
+      font-size: 13px;
+      color: var(--gray);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .date-badge {
+      background: var(--white);
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    /* ── 종목 상세 지표 ────────────────────── */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (min-width: 600px) {
+      .detail-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    /* ── 푸터 ──────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 32px 20px;
+      font-size: 12px;
+      color: var(--gray);
+      border-top: 1px solid var(--border);
+      margin-top: 48px;
+    }
+    footer a { color: var(--gray); }
+
+    /* ── 유틸 ──────────────────────────────── */
+    .mb16 { margin-bottom: 16px; }
+    .mb24 { margin-bottom: 24px; }
+    .ticker-link { text-decoration: none; color: var(--text); }
+    .ticker-link:hover .rank-symbol { color: var(--blue); text-decoration: underline; }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">숏<span>스캔</span></a>
+  <nav>
+    <a href="/">홈</a>
+    <a href="/ranking.html">랭킹</a>
+  </nav>
+</header>
+
+{% block content %}{% endblock %}
+
+<footer>
+  <p>숏스캔 · FINRA 장외 보고 기준 공매도 데이터 · 투자 판단 근거로 사용 금지</p>
+  <p style="margin-top:6px"><a href="/">홈</a> · <a href="/ranking.html">랭킹</a></p>
+</footer>
+
+</body>
+</html>

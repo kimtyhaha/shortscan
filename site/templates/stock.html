@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}{{ name_kr }} ({{ symbol }}) 공매도 비율 현황 — 숏스캔{% endblock %}
+{% block description %}{{ name_kr }}({{ symbol }})의 최근 공매도 비율 추이. FINRA 보고 기준 일별 공매도 거래량 및 분석 요약.{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- 종목 헤더 -->
+  <div class="date-header">
+    <a href="/" style="color:var(--gray);text-decoration:none">← 홈</a>
+    <span>|</span>
+    <span class="date-badge">{{ trade_date }} 기준</span>
+  </div>
+
+  <div style="margin-bottom:24px">
+    <div style="font-size:22px;font-weight:700">
+      {{ name_kr }}
+      <span style="font-size:16px;color:var(--gray);font-weight:400;margin-left:8px">{{ symbol }}</span>
+    </div>
+  </div>
+
+  <!-- 지표 카드 4개 -->
+  <div class="detail-grid">
+    <div class="card">
+      <div class="card-label">오늘 공매도 비율</div>
+      <div class="card-value red">{{ latest_ratio }}%</div>
+      <div class="card-sub">FINRA 보고 기준</div>
+    </div>
+    <div class="card">
+      <div class="card-label">전일 대비</div>
+      <div class="card-value {% if change >= 0 %}red{% else %}blue{% endif %}">
+        {{ '%+.1f' | format(change) }}%p
+      </div>
+      <div class="card-sub">{{ prev_ratio }}% → {{ latest_ratio }}%</div>
+    </div>
+    <div class="card">
+      <div class="card-label">10일 평균</div>
+      <div class="card-value">{{ avg_ratio }}%</div>
+      <div class="card-sub">최근 {{ series | length }}거래일</div>
+    </div>
+    <div class="card">
+      <div class="card-label">오늘 거래량</div>
+      <div class="card-value">{{ latest_vol }}</div>
+      <div class="card-sub">백만주 단위</div>
+    </div>
+  </div>
+
+  <!-- 10거래일 막대 차트 -->
+  <div class="card mb24">
+    <div class="section-title">📊 최근 10거래일 공매도 비율</div>
+    <div class="chart-wrap">
+      <canvas id="ratioChart"></canvas>
+    </div>
+    <div style="font-size:11px;color:var(--gray);margin-top:8px">
+      빨간 막대: 가장 최근 거래일
+    </div>
+  </div>
+
+  <!-- 인아티클 광고 -->
+  <div class="ad-slot">광고 영역 (Google AdSense 인아티클)</div>
+
+  <!-- 자동 분석 요약 -->
+  <div class="info-box mb24">
+    <strong style="color:var(--blue);display:block;margin-bottom:6px">📋 자동 분석 요약</strong>
+    {{ summary }}
+  </div>
+
+  <!-- 최근 데이터 테이블 -->
+  <div class="card mb24">
+    <div class="section-title">📅 일별 공매도 현황</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border)">
+          <th style="text-align:left;padding:8px 4px;color:var(--gray);font-weight:500">날짜</th>
+          <th style="text-align:right;padding:8px 4px;color:var(--gray);font-weight:500">공매도 비율</th>
+          <th style="text-align:right;padding:8px 4px;color:var(--gray);font-weight:500">전일比</th>
+          <th style="text-align:right;padding:8px 4px;color:var(--gray);font-weight:500">거래량</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in table_rows %}
+        <tr style="border-bottom:1px solid var(--border){% if loop.last %};background:#fafafa;font-weight:600{% endif %}">
+          <td style="padding:8px 4px">{{ row.date }}</td>
+          <td style="text-align:right;padding:8px 4px;color:var(--red)">{{ row.ratio }}%</td>
+          <td style="text-align:right;padding:8px 4px;color:{% if row.chg >= 0 %}var(--red){% else %}var(--blue){% endif %}">
+            {{ '%+.1f' | format(row.chg) }}%p
+          </td>
+          <td style="text-align:right;padding:8px 4px;color:var(--gray)">{{ row.vol }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warn-box">
+    ⚠️ 본 데이터는 FINRA 보고 기준이며 장외(off-exchange) 보고 거래만 포함합니다. 전체 시장 공매도 비율과 다를 수 있으며, 투자 조언이 아닙니다.
+  </div>
+
+</div>
+
+<script>
+const labels = {{ labels | tojson }};
+const values = {{ values | tojson }};
+const colors = values.map((_, i) =>
+  i === values.length - 1 ? 'rgba(229,57,53,0.85)' : 'rgba(229,57,53,0.25)'
+);
+const borderColors = values.map((_, i) =>
+  i === values.length - 1 ? 'rgba(229,57,53,1)' : 'rgba(229,57,53,0.5)'
+);
+
+new Chart(document.getElementById('ratioChart'), {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [{
+      data: values,
+      backgroundColor: colors,
+      borderColor: borderColors,
+      borderWidth: 1.5,
+      borderRadius: 3,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: {
+        beginAtZero: false,
+        ticks: { callback: v => v + '%', font: { size: 11 } },
+        grid: { color: '#f3f4f6' }
+      },
+      x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

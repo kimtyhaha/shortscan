@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}숏스캔 — 미국 주식 공매도 비율 실시간 현황{% endblock %}
+{% block description %}FINRA 데이터 기반 미국 주식 일별 공매도 비율. 급증 종목 TOP 20, 숏스퀴즈 후보를 매일 업데이트합니다.{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- 날짜 헤더 -->
+  <div class="date-header">
+    <span>📅 기준일</span>
+    <span class="date-badge">{{ trade_date }}</span>
+    <span>FINRA 보고 기준 (장외 거래 포함)</span>
+  </div>
+
+  <!-- 요약 카드 -->
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">시장 평균 공매도 비율</div>
+      <div class="card-value red">{{ avg_ratio }}%</div>
+      <div class="card-sub">전일 대비 {{ avg_change }}</div>
+    </div>
+    <div class="card">
+      <div class="card-label">급증 종목 수 (전일比 +5%p↑)</div>
+      <div class="card-value blue">{{ surge_count }}종목</div>
+      <div class="card-sub">거래량 100만주 이상 필터</div>
+    </div>
+    <div class="card">
+      <div class="card-label">숏스퀴즈 후보</div>
+      <div class="card-value">{{ squeeze_count }}종목</div>
+      <div class="card-sub">비율 40%↑ + 전일 대비 하락</div>
+    </div>
+    <div class="card">
+      <div class="card-label">분석 종목 수</div>
+      <div class="card-value">{{ total_count | format_num }}</div>
+      <div class="card-sub">FINRA CNMS 파일 기준</div>
+    </div>
+  </div>
+
+  <!-- 검색 -->
+  <div class="search-wrap">
+    <input type="text" id="search" placeholder="🔍  종목 검색 (예: TSLA, 테슬라)" oninput="filterTable(this.value)">
+  </div>
+
+  <!-- 급증 TOP 5 -->
+  <div class="card mb24">
+    <div class="section-title">📈 공매도 비율 급증 TOP 5</div>
+    <ul class="rank-list" id="surge-list">
+      {% for r in surge_top5 %}
+      <li class="rank-item">
+        <span class="rank-no">{{ r.rank }}</span>
+        <a class="ticker-link" href="/stock/{{ r.symbol }}.html" style="display:contents">
+          <span class="rank-symbol">{{ r.symbol }}</span>
+          <span class="rank-name">{{ r.name_kr }}</span>
+          <span class="rank-ratio">{{ r.ratio }}%</span>
+          <span class="rank-badge">+{{ r.change }}%p</span>
+        </a>
+        <span class="rank-vol">{{ r.total_volume | vol_fmt }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- 광고 슬롯 -->
+  <div class="ad-slot">광고 영역 (Google AdSense)</div>
+
+  <!-- 전체 급증 랭킹 -->
+  <div class="card mb24">
+    <div class="section-title">📈 공매도 비율 급증 TOP 20  <span style="font-size:12px;font-weight:400;color:var(--gray)">(전일 대비 +3%p 이상, 거래량 100만주↑)</span></div>
+    <ul class="rank-list" id="all-surge">
+      {% for r in surge_all %}
+      <li class="rank-item" data-sym="{{ r.symbol }}" data-name="{{ r.name_kr }}">
+        <span class="rank-no">{{ r.rank }}</span>
+        <a class="ticker-link" href="/stock/{{ r.symbol }}.html" style="display:contents">
+          <span class="rank-symbol">{{ r.symbol }}</span>
+          <span class="rank-name">{{ r.name_kr }}</span>
+          <span class="rank-ratio">{{ r.ratio }}%</span>
+          <span class="rank-badge">+{{ r.change }}%p</span>
+        </a>
+        <span class="rank-vol">{{ r.total_volume | vol_fmt }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- 숏스퀴즈 후보 -->
+  <div class="card mb24">
+    <div class="section-title">🔥 숏스퀴즈 후보  <span style="font-size:12px;font-weight:400;color:var(--gray)">(비율 40%↑ + 전일 대비 하락)</span></div>
+    <div class="info-box" style="margin-bottom:16px">
+      공매도 비율이 높은 상태에서 전일 대비 비율이 감소한 종목입니다.
+      공매도 세력의 포지션 청산 가능성이 있으며, 추가 주가 상승 시 강제 청산(숏스퀴즈) 압력이 커질 수 있습니다.
+    </div>
+    <ul class="rank-list">
+      {% for r in squeeze %}
+      <li class="rank-item">
+        <span class="rank-no">{{ r.rank }}</span>
+        <a class="ticker-link" href="/stock/{{ r.symbol }}.html" style="display:contents">
+          <span class="rank-symbol">{{ r.symbol }}</span>
+          <span class="rank-name">{{ r.name_kr }}</span>
+          <span class="rank-ratio">{{ r.ratio }}%</span>
+          <span class="rank-badge blue">{{ r.change }}%p</span>
+        </a>
+        <span class="rank-vol">{{ r.total_volume | vol_fmt }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- 광고 슬롯 -->
+  <div class="ad-slot">광고 영역 (Google AdSense 하단)</div>
+
+  <div class="warn-box">
+    ⚠️ 본 데이터는 FINRA 보고 기준이며 장외(off-exchange) 보고 거래만 포함합니다. 거래소 직접 체결분은 제외되므로 전체 시장 공매도 비율과 다를 수 있습니다.
+    본 사이트의 정보는 투자 조언이 아니며, 투자 손실에 대한 책임은 투자자 본인에게 있습니다.
+  </div>
+
+</div>
+
+<script>
+function filterTable(q) {
+  q = q.toUpperCase();
+  document.querySelectorAll('#all-surge .rank-item').forEach(el => {
+    const sym  = el.dataset.sym  || '';
+    const name = el.dataset.name || '';
+    el.style.display = (sym.includes(q) || name.includes(q)) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}
