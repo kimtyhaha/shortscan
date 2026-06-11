@@ -139,8 +139,8 @@
 
 {% block scripts %}
 <script>
-const labels = {{ labels | tojson }};
-const values = {{ values | tojson }};
+const labels = {{ labels | tojson | safe }};
+const values = {{ values | tojson | safe }};
 const colors = values.map((_, i) =>
   i === values.length - 1 ? 'rgba(229,57,53,0.85)' : 'rgba(229,57,53,0.25)'
 );

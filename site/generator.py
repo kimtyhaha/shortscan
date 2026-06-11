@@ -275,6 +275,16 @@ def main() -> None:
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "stock").mkdir(exist_ok=True)
+    (OUT_DIR / "js").mkdir(exist_ok=True)
+
+    # Chart.js 로컬 복사 (CDN 의존 제거)
+    chartjs_local = OUT_DIR / "js" / "chart.min.js"
+    if not chartjs_local.exists():
+        import urllib.request
+        url = "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+        print(f"  → Chart.js 다운로드 중...")
+        urllib.request.urlretrieve(url, chartjs_local)
+        print(f"  ✓ Chart.js 저장 ({chartjs_local.stat().st_size // 1024}KB)")
 
     conn = connect(DB_PATH)
     env  = make_env()
