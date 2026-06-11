@@ -6,9 +6,15 @@ from pathlib import Path
 
 from collector.finra_daily import ShortVolumeRecord
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 SCHEMA = """
+CREATE TABLE IF NOT EXISTS company_names (
+    symbol      TEXT PRIMARY KEY,
+    name        TEXT NOT NULL,
+    fetched_at  TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS daily_short_volume (
     trade_date TEXT NOT NULL,
     symbol TEXT NOT NULL,

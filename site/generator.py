@@ -29,6 +29,7 @@ from analyzer.ranking import (
 )
 from analyzer.summary import generate_summary
 from collector.database import connect, recent_ratios
+from collector.fetch_names import fetch_missing
 from collector.kr_names import get_kr_name
 
 
@@ -155,7 +156,7 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
         })
     table_rows.reverse()
 
-    name_kr = get_kr_name(symbol)
+    name_kr = get_kr_name(symbol, conn)
     summary = generate_summary(name_kr, series)
 
     # 차트 레이블: MM/DD 형식
@@ -200,7 +201,7 @@ def build_search_index(conn: sqlite3.Connection, trade_date: str) -> None:
         (trade_date,),
     )
     index = [
-        {"s": sym, "n": get_kr_name(sym), "r": ratio}
+        {"s": sym, "n": get_kr_name(sym, conn), "r": ratio}
         for sym, ratio in cur.fetchall()
     ]
     (OUT_DIR / "search-index.json").write_text(
@@ -294,12 +295,7 @@ def main() -> None:
         print("DB에 데이터 없음. main.py --backfill 30 먼저 실행하세요.")
         return
 
-    print(f"\n🔨 사이트 생성 중... (기준일: {trade_date})")
-
-    # 메인 페이지
-    build_index(conn, env, trade_date)
-
-    # 종목 상세 — 지정 종목 or DB 전체 종목
+    # 종목 목록 먼저 확보
     if args.tickers:
         symbols = [t.upper() for t in args.tickers]
     else:
@@ -308,6 +304,17 @@ def main() -> None:
             (trade_date,),
         )
         symbols = [row[0] for row in cur.fetchall()]
+
+    # 하드코딩에 없는 종목 yfinance로 이름 조회 (캐시 미스만)
+    from collector.kr_names import KR_NAMES
+    need_fetch = [s for s in symbols if s not in KR_NAMES]
+    if need_fetch:
+        fetch_missing(conn, need_fetch)
+
+    print(f"\n🔨 사이트 생성 중... (기준일: {trade_date})")
+
+    # 메인 페이지
+    build_index(conn, env, trade_date)
 
     ok = skip = 0
     for sym in symbols:

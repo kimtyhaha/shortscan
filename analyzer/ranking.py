@@ -59,7 +59,7 @@ def surge_ranking(
         RankRow(
             rank=i + 1,
             symbol=s,
-            name_kr=get_kr_name(s),
+            name_kr=get_kr_name(s, conn),
             ratio=r,
             change=c,
             total_volume=v,
@@ -92,7 +92,7 @@ def high_ratio_ranking(
         RankRow(
             rank=i + 1,
             symbol=s,
-            name_kr=get_kr_name(s),
+            name_kr=get_kr_name(s, conn),
             ratio=r,
             change=None,
             total_volume=v,
@@ -145,7 +145,7 @@ def squeeze_candidates(
         RankRow(
             rank=i + 1,
             symbol=s,
-            name_kr=get_kr_name(s),
+            name_kr=get_kr_name(s, conn),
             ratio=r,
             change=c,
             total_volume=v,

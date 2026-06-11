@@ -1,12 +1,13 @@
-"""종목명 매핑 테이블 (한국어 우선, 없으면 영어 회사명).
+"""종목명 매핑 테이블 (한국어 우선, DB 캐시, 없으면 티커).
 
 사용법:
     from collector.kr_names import get_kr_name
-    get_kr_name("TSLA")   # → "테슬라"
-    get_kr_name("IIPR")   # → "Innovative Industrial Properties"
-    get_kr_name("ZZZZ")   # → "ZZZZ" (매핑 없으면 티커 그대로)
+    get_kr_name("TSLA")        # → "테슬라"  (하드코딩)
+    get_kr_name("ZZZZ", conn)  # → DB 캐시 조회, 없으면 "ZZZZ"
 """
 from __future__ import annotations
+
+import sqlite3
 
 KR_NAMES: dict[str, str] = {
     # ── 메가캡 ────────────────────────────────────────────────────────────────
@@ -370,6 +371,15 @@ KR_NAMES: dict[str, str] = {
 }
 
 
-def get_kr_name(ticker: str) -> str:
-    """티커 → 종목명 (한국어 우선, 없으면 영어 회사명, 없으면 티커 그대로)."""
-    return KR_NAMES.get(ticker.upper(), ticker.upper())
+def get_kr_name(ticker: str, conn: sqlite3.Connection | None = None) -> str:
+    """티커 → 종목명. 우선순위: 하드코딩 KR_NAMES > DB 캐시 > 티커."""
+    t = ticker.upper()
+    if t in KR_NAMES:
+        return KR_NAMES[t]
+    if conn is not None:
+        row = conn.execute(
+            "SELECT name FROM company_names WHERE symbol = ?", (t,)
+        ).fetchone()
+        if row and row[0] and row[0] != t:
+            return row[0]
+    return t
