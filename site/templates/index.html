@@ -58,8 +58,9 @@
   </div>
 
   <!-- 검색 -->
-  <div class="search-wrap">
-    <input type="text" id="search" placeholder="🔍  종목 검색 (예: TSLA, 테슬라)" oninput="filterTable(this.value)">
+  <div class="search-wrap" style="position:relative">
+    <input type="text" id="search" placeholder="🔍  종목 검색 (예: TSLA, 테슬라)" autocomplete="off" oninput="handleSearch(this.value)" onkeydown="handleKey(event)">
+    <ul id="search-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--white);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;list-style:none;max-height:280px;overflow-y:auto;z-index:200;margin:0;padding:0;box-shadow:0 4px 12px rgba(0,0,0,.08)"></ul>
   </div>
 
   <!-- 급증 TOP 5 -->
@@ -137,13 +138,72 @@
 </div>
 
 <script>
-function filterTable(q) {
-  q = q.toUpperCase();
-  document.querySelectorAll('#all-surge .rank-item').forEach(el => {
-    const sym  = el.dataset.sym  || '';
-    const name = el.dataset.name || '';
-    el.style.display = (sym.includes(q) || name.includes(q)) ? '' : 'none';
+let _idx = null;
+let _cursor = -1;
+
+async function loadIndex() {
+  if (_idx) return _idx;
+  try {
+    const res = await fetch('/search-index.json');
+    _idx = await res.json();
+  } catch(e) { _idx = []; }
+  return _idx;
+}
+
+function handleSearch(q) {
+  _cursor = -1;
+  if (!q.trim()) { closeDropdown(); return; }
+  loadIndex().then(idx => showDropdown(idx, q.trim()));
+}
+
+function showDropdown(idx, q) {
+  const ul = document.getElementById('search-dropdown');
+  const ql = q.toUpperCase();
+  const hits = idx.filter(x => x.s.includes(ql) || x.n.includes(q)).slice(0, 12);
+  if (!hits.length) { ul.style.display = 'none'; return; }
+  ul.innerHTML = hits.map((x, i) => {
+    const safe = x.s.replace('/', '-');
+    return `<li data-href="/stock/${safe}.html" data-i="${i}"
+      style="padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)"
+      onmouseenter="setActive(${i})" onmouseleave="clearActive()"
+      onclick="location.href='/stock/${safe}.html'">
+      <span style="font-weight:700;width:72px;flex-shrink:0">${x.s}</span>
+      <span style="color:var(--gray);flex:1;font-size:13px">${x.n}</span>
+      <span style="color:var(--red);font-size:13px;font-weight:600">${x.r}%</span>
+    </li>`;
+  }).join('');
+  ul.style.display = 'block';
+}
+
+function setActive(i) {
+  _cursor = i;
+  document.querySelectorAll('#search-dropdown li').forEach((li, j) => {
+    li.style.background = j === i ? 'var(--bg)' : '';
   });
 }
+function clearActive() {
+  document.querySelectorAll('#search-dropdown li').forEach(li => li.style.background = '');
+}
+
+function handleKey(e) {
+  const ul = document.getElementById('search-dropdown');
+  const items = ul.querySelectorAll('li');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); _cursor = Math.min(_cursor+1, items.length-1); setActive(_cursor); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); _cursor = Math.max(_cursor-1, 0); setActive(_cursor); }
+  else if (e.key === 'Enter' && _cursor >= 0) { e.preventDefault(); location.href = items[_cursor].dataset.href; }
+  else if (e.key === 'Escape') closeDropdown();
+}
+
+function closeDropdown() {
+  document.getElementById('search-dropdown').style.display = 'none';
+  _cursor = -1;
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) closeDropdown();
+});
+
+loadIndex();
 </script>
 {% endblock %}

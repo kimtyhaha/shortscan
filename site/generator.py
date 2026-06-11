@@ -187,6 +187,29 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
 SITE_URL = "https://shortscan.pages.dev"
 
 
+# ── 검색 인덱스 ───────────────────────────────────────────────────────────────
+
+def build_search_index(conn: sqlite3.Connection, trade_date: str) -> None:
+    """전체 종목 검색 인덱스 JSON 생성 — 티커·한국어명·비율 포함."""
+    cur = conn.execute(
+        """SELECT symbol,
+                  ROUND(CAST(short_volume AS REAL) / NULLIF(total_volume,0) * 100, 1)
+           FROM daily_short_volume
+           WHERE trade_date = ? AND total_volume > 0
+           ORDER BY symbol""",
+        (trade_date,),
+    )
+    index = [
+        {"s": sym, "n": get_kr_name(sym), "r": ratio}
+        for sym, ratio in cur.fetchall()
+    ]
+    (OUT_DIR / "search-index.json").write_text(
+        json.dumps(index, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    print(f"  ✓ search-index.json  ({len(index)}개 종목)")
+
+
 # ── sitemap.xml ───────────────────────────────────────────────────────────────
 
 def build_sitemap(symbols: list[str], trade_date: str) -> None:
@@ -283,12 +306,13 @@ def main() -> None:
         else:
             skip += 1
 
-    conn.close()
-
     print(f"  ✓ 종목 페이지 {ok}개 생성 (데이터 없음 {skip}개 건너뜀)")
 
-    # sitemap.xml + robots.txt
-    built_symbols = [s for s in symbols if build_stock.__doc__ or True]  # 생성된 종목 목록
+    # 검색 인덱스 + sitemap.xml + robots.txt
+    build_search_index(conn, trade_date)
+
+    conn.close()
+
     build_sitemap(symbols, trade_date)
     build_robots()
 
