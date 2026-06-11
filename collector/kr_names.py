@@ -1,9 +1,10 @@
-"""한국어 종목명 매핑 테이블 (주요 500종목).
+"""종목명 매핑 테이블 (한국어 우선, 없으면 영어 회사명).
 
 사용법:
-    from collector.kr_names import get_kr_name, KR_NAMES
-    get_kr_name("TSLA")  # → "테슬라"
-    get_kr_name("UNKNOWN")  # → "UNKNOWN" (매핑 없으면 티커 그대로)
+    from collector.kr_names import get_kr_name
+    get_kr_name("TSLA")   # → "테슬라"
+    get_kr_name("IIPR")   # → "Innovative Industrial Properties"
+    get_kr_name("ZZZZ")   # → "ZZZZ" (매핑 없으면 티커 그대로)
 """
 from __future__ import annotations
 
@@ -21,6 +22,25 @@ KR_NAMES: dict[str, str] = {
     "BRK-A": "버크셔해서웨이 A",
     "LLY":   "일라이릴리",
     "UNH":   "유나이티드헬스",
+    "NFLX":  "넷플릭스",
+    "ORCL":  "오라클",
+    "ADBE":  "어도비",
+    "INTU":  "인튜이트",
+    "CRM":   "세일즈포스",
+    "NOW":   "서비스나우",
+    "SNOW":  "스노우플레이크",
+    "PLTR":  "팔란티어",
+    "UBER":  "우버",
+    "LYFT":  "리프트",
+    "SNAP":  "스냅",
+    "PINS":  "핀터레스트",
+    "RDDT":  "레딧",
+    "SPOT":  "스포티파이",
+    "AI":    "C3.ai",
+    "PATH":  "유아이패스",
+    "BBAI":  "빅베어AI",
+    "DIS":   "월트디즈니",
+    "CMCSA": "컴캐스트",
 
     # ── 반도체 ───────────────────────────────────────────────────────────────
     "AMD":   "AMD",
@@ -39,30 +59,13 @@ KR_NAMES: dict[str, str] = {
     "WOLF":  "울프스피드",
     "SWKS":  "스카이웍스솔루션",
     "MPWR":  "몰렉스파워",
+    "TSM":   "TSMC",
+    "NXPI":  "NXP세미컨덕터",
+    "ADI":   "아날로그디바이시스",
+    "TXN":   "텍사스인스트루먼트",
+    "INDI":  "인디세미컨덕터",
 
-    # ── AI/클라우드 ───────────────────────────────────────────────────────────
-    "MSFT":  "마이크로소프트",
-    "CRM":   "세일즈포스",
-    "NOW":   "서비스나우",
-    "SNOW":  "스노우플레이크",
-    "PLTR":  "팔란티어",
-    "AI":    "C3.ai",
-    "PATH":  "유아이패스",
-    "BBAI":  "빅베어AI",
-
-    # ── 빅테크/플랫폼 ────────────────────────────────────────────────────────
-    "NFLX":  "넷플릭스",
-    "ORCL":  "오라클",
-    "ADBE":  "어도비",
-    "INTU":  "인튜이트",
-    "UBER":  "우버",
-    "LYFT":  "리프트",
-    "SNAP":  "스냅",
-    "PINS":  "핀터레스트",
-    "RDDT":  "레딧",
-    "SPOT":  "스포티파이",
-
-    # ── 금융 ─────────────────────────────────────────────────────────────────
+    # ── 금융/은행 ─────────────────────────────────────────────────────────────
     "JPM":   "JP모건체이스",
     "BAC":   "뱅크오브아메리카",
     "WFC":   "웰스파고",
@@ -77,6 +80,32 @@ KR_NAMES: dict[str, str] = {
     "AFRM":  "어펌",
     "UPST":  "업스타트",
     "HOOD":  "로빈후드",
+    "BLK":   "블랙록",
+    "SCHW":  "찰스슈왑",
+    "TFC":   "트루이스트파이낸셜",
+    "LAZ":   "라자드",
+    "TROW":  "T.로우프라이스",
+    "IVZ":   "인베스코",
+    "CME":   "CME그룹",
+    "ICE":   "인터컨티넨탈익스체인지",
+    "SPGI":  "S&P글로벌",
+    "MCO":   "무디스",
+    "EBC":   "Eastern Bankshares",
+    "USB":   "US뱅코프",
+    "PNC":   "PNC파이낸셜",
+    "COF":   "캐피털원",
+    "DFS":   "디스커버파이낸셜",
+
+    # ── 보험 ─────────────────────────────────────────────────────────────────
+    "CB":    "처브",
+    "ALL":   "올스테이트",
+    "PGR":   "프로그레시브",
+    "MET":   "메트라이프",
+    "PRU":   "프루덴셜",
+    "AFL":   "애프락",
+    "AIG":   "AIG",
+    "TRV":   "트래블러스",
+    "HIG":   "하트퍼드파이낸셜",
 
     # ── 헬스케어/바이오 ──────────────────────────────────────────────────────
     "JNJ":   "존슨앤존슨",
@@ -96,9 +125,27 @@ KR_NAMES: dict[str, str] = {
     "ZTS":   "조에티스",
     "OCGN":  "옥시진",
     "SENS":  "센서로닉스",
+    "DXCM":  "덱스컴",
+    "TMO":   "써모피셔사이언티픽",
+    "DHR":   "다나허",
+    "ABT":   "애봇래버러토리스",
+    "BDX":   "베크턴디킨슨",
+    "HOLX":  "홀로직",
+    "BAX":   "Baxter International",
+    "XRAY":  "Dentsply Sirona",
+    "GMED":  "Globus Medical",
+    "WDAY":  "워크데이",
+    "CTSH":  "Cognizant Technology",
+    "RCUS":  "Arcus Biosciences",
+    "CORO":  "Corcept Therapeutics",
+    "RLAY":  "Relay Therapeutics",
+    "ADCT":  "ADC Therapeutics",
+    "IIPR":  "Innovative Industrial Properties",
+    "NVCR":  "Novocure",
+    "SPWR":  "SunPower",
+    "IQV":   "IQVIA Holdings",
 
     # ── 소비재/리테일 ────────────────────────────────────────────────────────
-    "AMZN":  "아마존",
     "WMT":   "월마트",
     "COST":  "코스트코",
     "HD":    "홈디포",
@@ -110,6 +157,16 @@ KR_NAMES: dict[str, str] = {
     "NKE":   "나이키",
     "LULU":  "룰루레몬",
     "BYND":  "비욘드미트",
+    "CNK":   "Cinemark Holdings",
+    "CVNA":  "카바나",
+    "USFD":  "US Foods Holding",
+    "PG":    "P&G",
+    "KO":    "코카콜라",
+    "PEP":   "펩시코",
+    "MNST":  "Monster Beverage",
+    "YUM":   "Yum! Brands",
+    "CMG":   "치포틀레멕시칸그릴",
+    "DPZ":   "도미노피자",
 
     # ── 에너지 ───────────────────────────────────────────────────────────────
     "XOM":   "엑슨모빌",
@@ -121,6 +178,12 @@ KR_NAMES: dict[str, str] = {
     "FCEL":  "퓨얼셀에너지",
     "BLNK":  "블링크차징",
     "CHPT":  "차지포인트",
+    "D":     "도미니언에너지",
+    "NEE":   "넥스트에라에너지",
+    "DUK":   "듀크에너지",
+    "SO":    "서던컴퍼니",
+    "AES":   "AES Corporation",
+    "BORR":  "Borr Drilling",
 
     # ── EV/자동차 ────────────────────────────────────────────────────────────
     "RIVN":  "리비안",
@@ -162,18 +225,19 @@ KR_NAMES: dict[str, str] = {
     "VZ":    "버라이즌",
     "TMUS":  "T모바일",
 
-    # ── ETF (주요) ───────────────────────────────────────────────────────────
-    "SPY":   "S&P500 ETF (SPDR)",
-    "QQQ":   "나스닥100 ETF",
-    "IWM":   "러셀2000 ETF",
-    "GLD":   "금 ETF (SPDR)",
-    "TLT":   "장기국채 ETF",
-    "SQQQ":  "나스닥3배 인버스",
-    "TQQQ":  "나스닥3배 레버리지",
-    "ARKK":  "ARK 이노베이션 ETF",
-    "ARKG":  "ARK 지노믹스 ETF",
-    "SOXS":  "반도체 3배 인버스",
-    "SOXL":  "반도체 3배 레버리지",
+    # ── 항공/여행 ────────────────────────────────────────────────────────────
+    "DAL":   "델타항공",
+    "UAL":   "유나이티드항공",
+    "AAL":   "아메리칸항공",
+    "LUV":   "사우스웨스트항공",
+    "ALK":   "알래스카항공",
+    "ABNB":  "에어비앤비",
+    "BKNG":  "부킹홀딩스",
+    "EXPE":  "익스피디아",
+    "MAR":   "매리어트",
+    "HLT":   "힐튼",
+    "CCL":   "카니발크루즈",
+    "RCL":   "로얄캐리비안",
 
     # ── 항공우주/방산 ────────────────────────────────────────────────────────
     "BA":    "보잉",
@@ -181,8 +245,64 @@ KR_NAMES: dict[str, str] = {
     "RTX":   "레이테온테크놀로지",
     "NOC":   "노스럽그러먼",
     "GE":    "GE에어로스페이스",
+    "GD":    "제너럴다이나믹스",
+    "KTOS":  "크라토스디펜스",
 
-    # ── 기타 ─────────────────────────────────────────────────────────────────
+    # ── 산업/소재 ────────────────────────────────────────────────────────────
+    "CAT":   "캐터필러",
+    "DE":    "존디어",
+    "MMM":   "3M",
+    "HON":   "허니웰",
+    "ETN":   "이튼",
+    "EMR":   "에머슨일렉트릭",
+    "ITW":   "일리노이툴웍스",
+    "ROK":   "로크웰오토메이션",
+    "BALL":  "Ball Corporation",
+    "IP":    "International Paper",
+    "PKG":   "Packaging Corp of America",
+    "CCO":   "Clear Channel Outdoor",
+    "NOV":   "NOV Inc",
+    "CNH":   "CNH Industrial",
+    "MSW":   "Mission Produce",
+    "ODV":   "Osisko Development",
+
+    # ── 기술/SW ──────────────────────────────────────────────────────────────
+    "ACN":   "액센추어",
+    "IBM":   "IBM",
+    "CSCO":  "시스코시스템즈",
+    "DELL":  "델테크놀로지",
+    "HPQ":   "HP",
+    "HPE":   "HPE",
+    "PANW":  "팔로알토네트웍스",
+    "CRWD":  "크라우드스트라이크",
+    "ZS":    "지스케일러",
+    "OKTA":  "옥타",
+    "DDOG":  "데이터독",
+    "NET":   "클라우드플레어",
+    "MDB":   "몽고DB",
+    "HUBS":  "허브스팟",
+    "ZM":    "줌비디오",
+    "TWLO":  "트윌리오",
+    "BILL":  "빌닷컴",
+    "GTLB":  "깃랩",
+    "MNDY":  "먼데이닷컴",
+    "SAIL":  "SailPoint Technologies",
+    "FLUT":  "Flutter Entertainment",
+
+    # ── 부동산 REIT ──────────────────────────────────────────────────────────
+    "AMT":   "아메리칸타워",
+    "PLD":   "프로로지스",
+    "EQIX":  "에퀴닉스",
+    "O":     "리얼티인컴",
+    "SPG":   "사이먼프로퍼티",
+    "CCI":   "크라운캐슬",
+    "DLR":   "디지털리얼티",
+    "VICI":  "비씨아이프로퍼티",
+    "WPC":   "W.P.캐리",
+    "NNN":   "National Retail Properties",
+    "OPEN":  "오픈도어",
+
+    # ── 중국 ADR ────────────────────────────────────────────────────────────
     "BABA":  "알리바바",
     "JD":    "징둥닷컴",
     "PDD":   "핀둬둬(테무)",
@@ -190,16 +310,67 @@ KR_NAMES: dict[str, str] = {
     "NTES":  "넷이즈",
     "TME":   "텐센트뮤직",
     "BILI":  "빌리빌리",
-    "DIS":   "월트디즈니",
-    "CMCSA": "컴캐스트",
-    "HOOD":  "로빈후드",
-    "OPEN":  "오픈도어",
+    "BEKE":  "KE Holdings",
+
+    # ── ETF ──────────────────────────────────────────────────────────────────
+    "SPY":   "S&P500 ETF",
+    "VOO":   "뱅가드 S&P500 ETF",
+    "VTI":   "뱅가드 전체시장 ETF",
+    "QQQ":   "나스닥100 ETF",
+    "IWM":   "러셀2000 ETF",
+    "VT":    "뱅가드 전세계 ETF",
+    "GLD":   "금 ETF",
+    "SLV":   "은 ETF",
+    "TLT":   "장기국채 ETF",
+    "IEF":   "중기국채 ETF",
+    "SHY":   "단기국채 ETF",
+    "AGG":   "미국채권 종합 ETF",
+    "BND":   "뱅가드 채권 ETF",
+    "LQD":   "투자등급 회사채 ETF",
+    "HYG":   "하이일드 회사채 ETF",
+    "USHY":  "USD 하이일드 ETF",
+    "SPIB":  "중기 회사채 ETF",
+    "SPSB":  "단기 회사채 ETF",
+    "SRLN":  "선순위 대출 ETF",
+    "IUSB":  "미국 채권 ETF (iShares)",
+    "VCSH":  "뱅가드 단기 회사채 ETF",
+    "VCIT":  "뱅가드 중기 회사채 ETF",
+    "JAAA":  "AAA CLO ETF",
+    "SQQQ":  "나스닥3배 인버스 ETF",
+    "TQQQ":  "나스닥3배 레버리지 ETF",
+    "ARKK":  "ARK 이노베이션 ETF",
+    "ARKG":  "ARK 지노믹스 ETF",
+    "SOXS":  "반도체 3배 인버스 ETF",
+    "SOXL":  "반도체 3배 레버리지 ETF",
+    "XLF":   "금융 섹터 ETF",
+    "XLV":   "헬스케어 섹터 ETF",
+    "XLE":   "에너지 섹터 ETF",
+    "XLK":   "기술 섹터 ETF",
+    "XLI":   "산업 섹터 ETF",
+    "XLB":   "소재 섹터 ETF",
+    "XLC":   "통신 섹터 ETF",
+    "XLY":   "임의소비재 섹터 ETF",
+    "XLP":   "필수소비재 섹터 ETF",
+    "XLU":   "유틸리티 섹터 ETF",
+    "XLRE":  "부동산 섹터 ETF",
+    "KRE":   "지역은행 ETF",
+    "XRT":   "리테일 ETF",
+    "EMXC":  "신흥국(중국제외) ETF",
+    "ESGE":  "신흥국 ESG ETF",
+    "CGDV":  "캐피털그룹 배당 ETF",
+    "CGIC":  "캐피털그룹 인컴 ETF",
+    "VGIT":  "뱅가드 중기국채 ETF",
+    "IGSB":  "단기 투자등급 채권 ETF",
+
+    # ── 기타 ─────────────────────────────────────────────────────────────────
     "UWMC":  "UWM홀딩스",
     "SDC":   "스마일다이렉트클럽",
     "SKLZ":  "스킬즈",
+    "ORCLPD": "Oracle Preferred",
+    "USFD":  "US Foods Holding",
 }
 
 
 def get_kr_name(ticker: str) -> str:
-    """티커 → 한국어 종목명. 매핑 없으면 티커 그대로."""
+    """티커 → 종목명 (한국어 우선, 없으면 영어 회사명, 없으면 티커 그대로)."""
     return KR_NAMES.get(ticker.upper(), ticker.upper())
