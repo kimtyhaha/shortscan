@@ -100,21 +100,21 @@
     <div>
       <div class="card-label">공매도 잔량 (Float%)</div>
       <div class="card-value {% if short_pct and short_pct >= 20 %}red{% else %}blue{% endif %}" style="font-size:22px">
-        {{ short_pct if short_pct else '—' }}{% if short_pct %}%{% endif %}
+        {% if short_pct %}{{ short_pct }}%{% elif is_etf %}<span style="font-size:14px;color:var(--gray);background:#f3f4f6;padding:2px 8px;border-radius:4px">ETF</span>{% else %}—{% endif %}
       </div>
       <div class="card-sub">yfinance 공시 기준</div>
     </div>
     <div>
       <div class="card-label">공매도 잔량 (주식수)</div>
       <div class="card-value" style="font-size:18px">
-        {% if shares_short %}{{ (shares_short / 1_000_000) | round(1) }}M{% else %}—{% endif %}
+        {% if shares_short %}{{ (shares_short / 1_000_000) | round(1) }}M{% elif is_etf %}<span style="font-size:14px;color:var(--gray);background:#f3f4f6;padding:2px 8px;border-radius:4px">ETF</span>{% else %}—{% endif %}
       </div>
       <div class="card-sub">백만주 단위</div>
     </div>
     <div>
       <div class="card-label">Days to Cover</div>
       <div class="card-value {% if short_ratio and short_ratio >= 5 %}red{% endif %}" style="font-size:22px">
-        {{ short_ratio if short_ratio else '—' }}
+        {% if short_ratio %}{{ short_ratio }}{% elif is_etf %}<span style="font-size:14px;color:var(--gray);background:#f3f4f6;padding:2px 8px;border-radius:4px">ETF</span>{% else %}—{% endif %}
       </div>
       <div class="card-sub">공매도 청산에 걸리는 일수</div>
     </div>
@@ -177,20 +177,6 @@
 
 {% block scripts %}
 <script>
-function logoFallback(el) {
-  var sym = el.alt || '';
-  var label = sym.replace(/[^A-Z]/g, '').slice(0, 2) || sym.slice(0, 2);
-  var palette = ['#e53935','#1976d2','#388e3c','#f57c00','#7b1fa2','#00838f','#c62828','#1565c0'];
-  var bg = palette[sym.charCodeAt(0) % palette.length];
-  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44">'
-    + '<rect width="44" height="44" rx="10" fill="' + bg + '"/>'
-    + '<text x="22" y="30" text-anchor="middle" font-family="Arial,sans-serif" '
-    + 'font-size="' + (label.length > 1 ? '15' : '20') + '" font-weight="700" fill="#fff">'
-    + label + '</text></svg>';
-  el.onerror = null;
-  el.src = 'data:image/svg+xml;base64,' + btoa(svg);
-}
-
 const labels = {{ labels | tojson | safe }};
 const values = {{ values | tojson | safe }};
 const colors = values.map((_, i) =>

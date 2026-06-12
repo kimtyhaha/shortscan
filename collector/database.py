@@ -54,6 +54,11 @@ CREATE TABLE IF NOT EXISTS meta (
 def connect(db_path: str | Path) -> sqlite3.Connection:
     conn = sqlite3.connect(str(db_path))
     conn.executescript(SCHEMA)
+    try:
+        conn.execute("ALTER TABLE stock_fundamentals ADD COLUMN quote_type TEXT")
+        conn.commit()
+    except Exception:
+        pass
     conn.execute(
         "INSERT OR REPLACE INTO meta (key, value) VALUES ('schema_version', ?)",
         (str(SCHEMA_VERSION),),

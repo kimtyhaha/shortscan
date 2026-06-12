@@ -161,12 +161,13 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
 
     # Short Interest
     fi = conn.execute(
-        "SELECT short_pct_float, shares_short, short_ratio FROM stock_fundamentals WHERE symbol=?",
+        "SELECT short_pct_float, shares_short, short_ratio, quote_type FROM stock_fundamentals WHERE symbol=?",
         (symbol,),
     ).fetchone()
-    short_pct   = round(fi[0] * 100, 1) if fi and fi[0] else None
+    short_pct    = round(fi[0] * 100, 1) if fi and fi[0] else None
     shares_short = fi[1] if fi else None
     short_ratio  = round(fi[2], 1) if fi and fi[2] else None
+    is_etf       = bool(fi and fi[3] == "ETF")
 
     # 차트 레이블: MM/DD 형식
     labels = [d[5:] for d in dates]
@@ -201,6 +202,7 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
         short_pct=short_pct,
         shares_short=shares_short,
         short_ratio=short_ratio,
+        is_etf=is_etf,
         has_og=gen_og,
     )
 

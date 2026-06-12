@@ -102,6 +102,7 @@ def _fetch_fundamentals(symbol: str) -> dict:
             "shares_short":    info.get("sharesShort"),
             "short_ratio":     info.get("shortRatio"),
             "float_shares":    info.get("floatShares"),
+            "quote_type":      info.get("quoteType"),
         }
     except Exception:
         return {"symbol": symbol}
@@ -115,11 +116,11 @@ def import_fundamentals_json(conn: sqlite3.Connection) -> int:
     import json
     data = json.loads(json_path.read_text())
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    rows = [(d["s"], d.get("p"), d.get("n"), d.get("r"), None, now) for d in data]
+    rows = [(d["s"], d.get("p"), d.get("n"), d.get("r"), None, d.get("q"), now) for d in data]
     conn.executemany(
         """INSERT OR REPLACE INTO stock_fundamentals
-           (symbol, short_pct_float, shares_short, short_ratio, float_shares, fetched_at)
-           VALUES (?,?,?,?,?,?)""",
+           (symbol, short_pct_float, shares_short, short_ratio, float_shares, quote_type, fetched_at)
+           VALUES (?,?,?,?,?,?,?)""",
         rows,
     )
     conn.commit()
@@ -158,14 +159,15 @@ def fetch_fundamentals(conn: sqlite3.Connection, symbols: list[str],
                 d.get("shares_short"),
                 d.get("short_ratio"),
                 d.get("float_shares"),
+                d.get("quote_type"),
                 now,
             ))
 
             if len(rows) >= 200:
                 conn.executemany(
                     """INSERT OR REPLACE INTO stock_fundamentals
-                       (symbol, short_pct_float, shares_short, short_ratio, float_shares, fetched_at)
-                       VALUES (?,?,?,?,?,?)""",
+                       (symbol, short_pct_float, shares_short, short_ratio, float_shares, quote_type, fetched_at)
+                       VALUES (?,?,?,?,?,?,?)""",
                     rows,
                 )
                 conn.commit()
@@ -178,8 +180,8 @@ def fetch_fundamentals(conn: sqlite3.Connection, symbols: list[str],
         if rows:
             conn.executemany(
                 """INSERT OR REPLACE INTO stock_fundamentals
-                   (symbol, short_pct_float, shares_short, short_ratio, float_shares, fetched_at)
-                   VALUES (?,?,?,?,?,?)""",
+                   (symbol, short_pct_float, shares_short, short_ratio, float_shares, quote_type, fetched_at)
+                   VALUES (?,?,?,?,?,?,?)""",
                 rows,
             )
             conn.commit()
@@ -193,17 +195,20 @@ def export_fundamentals_json(conn: sqlite3.Connection) -> int:
     """stock_fundamentals DB → data/short_interest.json 내보내기."""
     import json
     rows = conn.execute(
-        """SELECT symbol, short_pct_float, shares_short, short_ratio
+        """SELECT symbol, short_pct_float, shares_short, short_ratio, quote_type
            FROM stock_fundamentals
            WHERE short_pct_float IS NOT NULL
               OR shares_short IS NOT NULL
               OR short_ratio IS NOT NULL
+              OR quote_type IS NOT NULL
            ORDER BY symbol"""
     ).fetchall()
-    data = [
-        {"s": r[0], "p": r[1], "n": r[2], "r": r[3]}
-        for r in rows
-    ]
+    data = []
+    for r in rows:
+        entry = {"s": r[0], "p": r[1], "n": r[2], "r": r[3]}
+        if r[4]:
+            entry["q"] = r[4]
+        data.append(entry)
     out = ROOT / "data" / "short_interest.json"
     out.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
     print(f"  ✓ short_interest.json 저장: {len(data)}개 종목")

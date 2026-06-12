@@ -73,7 +73,7 @@
         <a class="ticker-link" href="/stock/{{ r.symbol }}.html" style="display:contents">
           <img src="https://assets.parqet.com/logos/symbol/{{ r.symbol }}" alt=""
                width="24" height="24" style="border-radius:6px;object-fit:contain;flex-shrink:0;background:#f3f4f6"
-               onerror="this.style.display='none'">
+               onerror=\"logoFallback(this)\">
           <span class="rank-symbol">{{ r.symbol }}</span>
           <span class="rank-name">{{ r.name_kr }}</span>
           <span class="rank-ratio">{{ r.ratio }}%</span>
@@ -98,7 +98,7 @@
         <a class="ticker-link" href="/stock/{{ r.symbol }}.html" style="display:contents">
           <img src="https://assets.parqet.com/logos/symbol/{{ r.symbol }}" alt=""
                width="24" height="24" style="border-radius:6px;object-fit:contain;flex-shrink:0;background:#f3f4f6"
-               onerror="this.style.display='none'">
+               onerror=\"logoFallback(this)\">
           <span class="rank-symbol">{{ r.symbol }}</span>
           <span class="rank-name">{{ r.name_kr }}</span>
           <span class="rank-ratio">{{ r.ratio }}%</span>
@@ -124,7 +124,7 @@
         <a class="ticker-link" href="/stock/{{ r.symbol }}.html" style="display:contents">
           <img src="https://assets.parqet.com/logos/symbol/{{ r.symbol }}" alt=""
                width="24" height="24" style="border-radius:6px;object-fit:contain;flex-shrink:0;background:#f3f4f6"
-               onerror="this.style.display='none'">
+               onerror=\"logoFallback(this)\">
           <span class="rank-symbol">{{ r.symbol }}</span>
           <span class="rank-name">{{ r.name_kr }}</span>
           <span class="rank-ratio">{{ r.ratio }}%</span>
@@ -178,7 +178,7 @@ function showDropdown(idx, q) {
       onclick="location.href='/stock/${safe}.html'">
       <img src="https://assets.parqet.com/logos/symbol/${x.s}" alt=""
            width="28" height="28" style="border-radius:6px;object-fit:contain;background:#f3f4f6;flex-shrink:0"
-           onerror="this.style.display='none'">
+           onerror=\"logoFallback(this)\">
       <span style="font-weight:700;width:68px;flex-shrink:0;font-size:13px">${x.s}</span>
       <span style="color:var(--gray);flex:1;font-size:13px">${x.n}</span>
       <span style="color:var(--red);font-size:13px;font-weight:600">${x.r}%</span>
