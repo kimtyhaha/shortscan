@@ -81,7 +81,7 @@ def build_main_og(avg_ratio: float, surge_count: int, trade_date: str) -> Path:
 
     # 하단 URL
     draw.rectangle([0, H - 60, W, H], fill="#ffffff")
-    draw.text((72, H - 44), "shortscan.pages.dev", font=f_small, fill="#9ca3af")
+    draw.text((72, H - 44), "shortscan.cc", font=f_small, fill="#9ca3af")
     draw.text((W - 350, H - 44), "FINRA 공매도 데이터 무료 제공", font=f_small, fill="#d1d5db")
 
     out = OUT_DIR / "og.png"
@@ -125,7 +125,7 @@ def build_stock_og(symbol: str, name_kr: str, ratio: float, change: float) -> Pa
     draw.text((710, 344), chg_str, font=_font(60), fill=chg_col)
 
     draw.rectangle([0, H - 60, W, H], fill="#ffffff")
-    draw.text((72, H - 44), "shortscan.pages.dev", font=f_small, fill="#9ca3af")
+    draw.text((72, H - 44), "shortscan.cc", font=f_small, fill="#9ca3af")
 
     safe = symbol.replace("/", "-")
     out = OUT_DIR / "og" / f"{safe}.png"

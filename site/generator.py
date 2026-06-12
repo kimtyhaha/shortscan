@@ -209,7 +209,7 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
     return True
 
 
-SITE_URL = "https://shortscan.pages.dev"
+SITE_URL = "https://shortscan.cc"
 
 
 # ── 검색 인덱스 ───────────────────────────────────────────────────────────────
