@@ -29,7 +29,7 @@ from analyzer.ranking import (
 )
 from analyzer.summary import generate_summary
 from collector.database import connect, recent_ratios
-from collector.fetch_names import fetch_missing, fetch_fundamentals
+from collector.fetch_names import fetch_missing, fetch_fundamentals, import_fundamentals_json
 from collector.kr_names import get_kr_name
 
 
@@ -323,7 +323,8 @@ def main() -> None:
     if need_fetch:
         fetch_missing(conn, need_fetch)
 
-    # Short Interest 조회 (캐시 미스만, 상위 거래량 종목 우선)
+    # Short Interest: JSON 먼저 import → 나머지 yfinance 조회
+    import_fundamentals_json(conn)
     fetch_fundamentals(conn, symbols)
 
     print(f"\n🔨 사이트 생성 중... (기준일: {trade_date})")

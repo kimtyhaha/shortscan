@@ -107,6 +107,26 @@ def _fetch_fundamentals(symbol: str) -> dict:
         return {"symbol": symbol}
 
 
+def import_fundamentals_json(conn: sqlite3.Connection) -> int:
+    """data/short_interest.json → DB import. 이미 있는 종목은 덮어씀."""
+    json_path = ROOT / "data" / "short_interest.json"
+    if not json_path.exists():
+        return 0
+    import json
+    data = json.loads(json_path.read_text())
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    rows = [(d["s"], d.get("p"), d.get("n"), d.get("r"), None, now) for d in data]
+    conn.executemany(
+        """INSERT OR REPLACE INTO stock_fundamentals
+           (symbol, short_pct_float, shares_short, short_ratio, float_shares, fetched_at)
+           VALUES (?,?,?,?,?,?)""",
+        rows,
+    )
+    conn.commit()
+    print(f"  ✓ short_interest.json import: {len(rows)}개")
+    return len(rows)
+
+
 def fetch_fundamentals(conn: sqlite3.Connection, symbols: list[str],
                        force: bool = False) -> int:
     """Short Interest 지표 조회 후 DB 저장. 이미 있으면 스킵."""
