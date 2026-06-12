@@ -51,24 +51,22 @@
     <span class="date-badge">{{ trade_date }} 기준</span>
   </div>
 
-  <div style="margin-bottom:8px;display:flex;align-items:center;gap:14px">
-    <img src="https://assets.parqet.com/logos/symbol/{{ symbol }}"
-         alt="{{ symbol }}" width="44" height="44"
-         style="border-radius:10px;object-fit:contain;background:#f3f4f6;padding:2px;flex-shrink:0"
-         onerror="this.style.display='none'">
-    <div>
-      <div style="font-size:22px;font-weight:700">{{ name_kr }}</div>
-      <div style="font-size:14px;color:var(--gray);margin-top:2px">{{ symbol }}</div>
+  <div style="margin-bottom:24px;display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:14px">
+      <img src="https://assets.parqet.com/logos/symbol/{{ symbol }}"
+           alt="{{ symbol }}" width="44" height="44"
+           style="border-radius:10px;object-fit:contain;background:#f3f4f6;padding:2px;flex-shrink:0"
+           onerror="this.style.display='none'">
+      <div>
+        <div style="font-size:22px;font-weight:700">{{ name_kr }}</div>
+        <div style="font-size:14px;color:var(--gray);margin-top:2px">{{ symbol }}</div>
+      </div>
     </div>
-  </div>
-
-  <!-- 공유 버튼 -->
-  <div class="share-bar" style="margin-bottom:24px">
-    <span style="font-size:12px;color:var(--gray);font-weight:500">공유하기</span>
-    <a class="share-btn twitter" id="btn-twitter" href="#" target="_blank" rel="noopener">
-      𝕏 트위터
-    </a>
-    <button class="share-btn copy" onclick="copyLink()">🔗 링크 복사</button>
+    <!-- 공유 버튼 -->
+    <div class="share-bar" style="margin:0">
+      <a class="share-btn twitter" id="btn-twitter" href="#" target="_blank" rel="noopener">𝕏 트위터</a>
+      <button class="share-btn copy" onclick="copyLink()">🔗 링크 복사</button>
+    </div>
   </div>
 
   <!-- 지표 카드 4개 -->
