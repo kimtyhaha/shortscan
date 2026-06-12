@@ -120,7 +120,7 @@ def build_index(conn: sqlite3.Connection, env: Environment, trade_date: str) -> 
 # ── 종목 상세 페이지 ──────────────────────────────────────────────────────────
 
 def build_stock(conn: sqlite3.Connection, env: Environment,
-                symbol: str, trade_date: str) -> bool:
+                symbol: str, trade_date: str, gen_og: bool = False) -> bool:
     series = recent_ratios(conn, symbol, days=10)
     if not series:
         return False
@@ -171,6 +171,18 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
     # 차트 레이블: MM/DD 형식
     labels = [d[5:] for d in dates]
 
+    safe_sym = symbol.replace("/", "-").replace("\\", "-")
+
+    # 종목별 OG 이미지 (gen_og=True인 상위 종목만)
+    if gen_og:
+        try:
+            from og_image import build_stock_og
+            og_path = OUT_DIR / "og" / f"{safe_sym}.png"
+            if not og_path.exists():
+                build_stock_og(symbol, name_kr, latest_ratio, change)
+        except Exception:
+            pass
+
     tmpl = env.get_template("stock.html")
     html = tmpl.render(
         symbol=symbol,
@@ -189,21 +201,11 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
         short_pct=short_pct,
         shares_short=shares_short,
         short_ratio=short_ratio,
+        has_og=gen_og,
     )
 
-    safe_sym = symbol.replace("/", "-").replace("\\", "-")
     out_path = OUT_DIR / "stock" / f"{safe_sym}.html"
     out_path.write_text(html, encoding="utf-8")
-
-    # 종목별 OG 이미지
-    try:
-        from og_image import build_stock_og
-        og_path = OUT_DIR / "og" / f"{safe_sym}.png"
-        if not og_path.exists():
-            build_stock_og(symbol, name_kr, latest_ratio, change)
-    except Exception:
-        pass
-
     return True
 
 
@@ -376,12 +378,21 @@ def main() -> None:
         print(f"  ⚠ OG 이미지 생성 실패: {e}")
         _og_available = False
 
+    # OG 이미지 생성 대상: 거래량 상위 500 (Cloudflare Pages 20,000파일 제한)
+    top500_cur = conn.execute(
+        """SELECT symbol FROM daily_short_volume
+           WHERE trade_date = ? AND total_volume > 0
+           ORDER BY total_volume DESC LIMIT 500""",
+        (trade_date,),
+    )
+    og_symbols = {row[0] for row in top500_cur.fetchall()}
+
     # 메인 페이지
     build_index(conn, env, trade_date)
 
     ok = skip = 0
     for sym in symbols:
-        if build_stock(conn, env, sym, trade_date):
+        if build_stock(conn, env, sym, trade_date, gen_og=(sym in og_symbols)):
             ok += 1
         else:
             skip += 1

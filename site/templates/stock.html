@@ -9,8 +9,8 @@
 {% block og_title %}{{ name_kr }} ({{ symbol }}) 공매도 비율 {{ latest_ratio }}% — 숏스캔{% endblock %}
 {% block og_desc %}{{ name_kr }} 공매도 비율 {{ latest_ratio }}%, 전일 대비 {{ '%+.1f' | format(change) }}%p. {{ trade_date }} 기준 FINRA 데이터.{% endblock %}
 {% block og_url %}/stock/{{ symbol }}.html{% endblock %}
-{% block og_image %}/og/{{ symbol | replace('/', '-') }}.png{% endblock %}
-{% block tw_image %}/og/{{ symbol | replace('/', '-') }}.png{% endblock %}
+{% block og_image %}{% if has_og %}/og/{{ symbol | replace('/', '-') }}.png{% else %}/og.png{% endif %}{% endblock %}
+{% block tw_image %}{% if has_og %}/og/{{ symbol | replace('/', '-') }}.png{% else %}/og.png{% endif %}{% endblock %}
 {% block tw_title %}{{ name_kr }} ({{ symbol }}) 공매도 {{ latest_ratio }}%{% endblock %}
 {% block tw_desc %}전일 대비 {{ '%+.1f' | format(change) }}%p · 10일 평균 {{ avg_ratio }}% · {{ trade_date }}{% endblock %}
 
