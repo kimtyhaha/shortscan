@@ -291,11 +291,11 @@ Sitemap: {SITE_URL}/sitemap.xml
 
 
 def build_redirects(symbols: list[str]) -> None:
-    """Cloudflare Pages clean URLs — /stock/TICKER → /stock/TICKER.html"""
+    """Cloudflare Pages clean URLs — 200 rewrite (not 301) to avoid Pretty-URLs loop"""
     lines = []
     for sym in symbols:
         safe = sym.replace("/", "-").replace("\\", "-")
-        lines.append(f"/stock/{safe}  /stock/{safe}.html  301")
+        lines.append(f"/stock/{safe}  /stock/{safe}.html  200")
     (OUT_DIR / "_redirects").write_text("\n".join(lines), encoding="utf-8")
     print(f"  ✓ _redirects  ({len(lines)}개 룰)")
 
