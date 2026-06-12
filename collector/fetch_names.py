@@ -91,6 +91,84 @@ def get_cached_name(conn: sqlite3.Connection, symbol: str) -> str | None:
     return row[0] if row else None
 
 
+def _fetch_fundamentals(symbol: str) -> dict:
+    """yfinance로 Short Interest 관련 지표 조회."""
+    try:
+        import yfinance as yf
+        info = yf.Ticker(symbol).info
+        return {
+            "symbol":          symbol,
+            "short_pct_float": info.get("shortPercentOfFloat"),
+            "shares_short":    info.get("sharesShort"),
+            "short_ratio":     info.get("shortRatio"),
+            "float_shares":    info.get("floatShares"),
+        }
+    except Exception:
+        return {"symbol": symbol}
+
+
+def fetch_fundamentals(conn: sqlite3.Connection, symbols: list[str],
+                       force: bool = False) -> int:
+    """Short Interest 지표 조회 후 DB 저장. 이미 있으면 스킵."""
+    if force:
+        missing = symbols
+    else:
+        cached = {
+            row[0] for row in
+            conn.execute("SELECT symbol FROM stock_fundamentals").fetchall()
+        }
+        missing = [s for s in symbols if s not in cached]
+
+    if not missing:
+        return 0
+
+    print(f"  → Short Interest 조회: {len(missing)}개 (workers={MAX_WORKERS})")
+    now   = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    saved = 0
+
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
+        futures = {ex.submit(_fetch_fundamentals, sym): sym for sym in missing}
+        rows: list[tuple] = []
+
+        for i, fut in enumerate(as_completed(futures), 1):
+            d = fut.result()
+            rows.append((
+                d["symbol"],
+                d.get("short_pct_float"),
+                d.get("shares_short"),
+                d.get("short_ratio"),
+                d.get("float_shares"),
+                now,
+            ))
+
+            if len(rows) >= 200:
+                conn.executemany(
+                    """INSERT OR REPLACE INTO stock_fundamentals
+                       (symbol, short_pct_float, shares_short, short_ratio, float_shares, fetched_at)
+                       VALUES (?,?,?,?,?,?)""",
+                    rows,
+                )
+                conn.commit()
+                saved += len(rows)
+                rows = []
+
+            if i % BATCH_LOG == 0:
+                print(f"     {i}/{len(missing)} 완료...")
+
+        if rows:
+            conn.executemany(
+                """INSERT OR REPLACE INTO stock_fundamentals
+                   (symbol, short_pct_float, shares_short, short_ratio, float_shares, fetched_at)
+                   VALUES (?,?,?,?,?,?)""",
+                rows,
+            )
+            conn.commit()
+            saved += len(rows)
+
+    print(f"  ✓ Short Interest 저장: {saved}개")
+    return saved
+
+
 if __name__ == "__main__":
     import argparse
     from collector.database import connect

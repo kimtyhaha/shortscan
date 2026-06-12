@@ -29,7 +29,7 @@ from analyzer.ranking import (
 )
 from analyzer.summary import generate_summary
 from collector.database import connect, recent_ratios
-from collector.fetch_names import fetch_missing
+from collector.fetch_names import fetch_missing, fetch_fundamentals
 from collector.kr_names import get_kr_name
 
 
@@ -159,6 +159,15 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
     name_kr = get_kr_name(symbol, conn)
     summary = generate_summary(name_kr, series)
 
+    # Short Interest
+    fi = conn.execute(
+        "SELECT short_pct_float, shares_short, short_ratio FROM stock_fundamentals WHERE symbol=?",
+        (symbol,),
+    ).fetchone()
+    short_pct   = round(fi[0] * 100, 1) if fi and fi[0] else None
+    shares_short = fi[1] if fi else None
+    short_ratio  = round(fi[2], 1) if fi and fi[2] else None
+
     # 차트 레이블: MM/DD 형식
     labels = [d[5:] for d in dates]
 
@@ -177,6 +186,9 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
         values=ratios,
         table_rows=table_rows,
         summary=summary,
+        short_pct=short_pct,
+        shares_short=shares_short,
+        short_ratio=short_ratio,
     )
 
     safe_sym = symbol.replace("/", "-").replace("\\", "-")
@@ -310,6 +322,9 @@ def main() -> None:
     need_fetch = [s for s in symbols if s not in KR_NAMES]
     if need_fetch:
         fetch_missing(conn, need_fetch)
+
+    # Short Interest 조회 (캐시 미스만, 상위 거래량 종목 우선)
+    fetch_fundamentals(conn, symbols)
 
     print(f"\n🔨 사이트 생성 중... (기준일: {trade_date})")
 

@@ -6,13 +6,22 @@ from pathlib import Path
 
 from collector.finra_daily import ShortVolumeRecord
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS company_names (
     symbol      TEXT PRIMARY KEY,
     name        TEXT NOT NULL,
     fetched_at  TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS stock_fundamentals (
+    symbol               TEXT PRIMARY KEY,
+    short_pct_float      REAL,
+    shares_short         INTEGER,
+    short_ratio          REAL,
+    float_shares         INTEGER,
+    fetched_at           TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS daily_short_volume (

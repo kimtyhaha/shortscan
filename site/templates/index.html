@@ -71,6 +71,9 @@
       <li class="rank-item">
         <span class="rank-no">{{ r.rank }}</span>
         <a class="ticker-link" href="/stock/{{ r.symbol }}.html" style="display:contents">
+          <img src="https://assets.parqet.com/logos/symbol/{{ r.symbol }}" alt=""
+               width="24" height="24" style="border-radius:6px;object-fit:contain;flex-shrink:0;background:#f3f4f6"
+               onerror="this.style.display='none'">
           <span class="rank-symbol">{{ r.symbol }}</span>
           <span class="rank-name">{{ r.name_kr }}</span>
           <span class="rank-ratio">{{ r.ratio }}%</span>
@@ -93,6 +96,9 @@
       <li class="rank-item" data-sym="{{ r.symbol }}" data-name="{{ r.name_kr }}">
         <span class="rank-no">{{ r.rank }}</span>
         <a class="ticker-link" href="/stock/{{ r.symbol }}.html" style="display:contents">
+          <img src="https://assets.parqet.com/logos/symbol/{{ r.symbol }}" alt=""
+               width="24" height="24" style="border-radius:6px;object-fit:contain;flex-shrink:0;background:#f3f4f6"
+               onerror="this.style.display='none'">
           <span class="rank-symbol">{{ r.symbol }}</span>
           <span class="rank-name">{{ r.name_kr }}</span>
           <span class="rank-ratio">{{ r.ratio }}%</span>
@@ -116,6 +122,9 @@
       <li class="rank-item">
         <span class="rank-no">{{ r.rank }}</span>
         <a class="ticker-link" href="/stock/{{ r.symbol }}.html" style="display:contents">
+          <img src="https://assets.parqet.com/logos/symbol/{{ r.symbol }}" alt=""
+               width="24" height="24" style="border-radius:6px;object-fit:contain;flex-shrink:0;background:#f3f4f6"
+               onerror="this.style.display='none'">
           <span class="rank-symbol">{{ r.symbol }}</span>
           <span class="rank-name">{{ r.name_kr }}</span>
           <span class="rank-ratio">{{ r.ratio }}%</span>
@@ -164,10 +173,13 @@ function showDropdown(idx, q) {
   ul.innerHTML = hits.map((x, i) => {
     const safe = x.s.replace('/', '-');
     return `<li data-href="/stock/${safe}.html" data-i="${i}"
-      style="padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)"
+      style="padding:8px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)"
       onmouseenter="setActive(${i})" onmouseleave="clearActive()"
       onclick="location.href='/stock/${safe}.html'">
-      <span style="font-weight:700;width:72px;flex-shrink:0">${x.s}</span>
+      <img src="https://assets.parqet.com/logos/symbol/${x.s}" alt=""
+           width="28" height="28" style="border-radius:6px;object-fit:contain;background:#f3f4f6;flex-shrink:0"
+           onerror="this.style.display='none'">
+      <span style="font-weight:700;width:68px;flex-shrink:0;font-size:13px">${x.s}</span>
       <span style="color:var(--gray);flex:1;font-size:13px">${x.n}</span>
       <span style="color:var(--red);font-size:13px;font-weight:600">${x.r}%</span>
     </li>`;

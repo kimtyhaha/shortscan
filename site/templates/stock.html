@@ -49,10 +49,14 @@
     <span class="date-badge">{{ trade_date }} 기준</span>
   </div>
 
-  <div style="margin-bottom:24px">
-    <div style="font-size:22px;font-weight:700">
-      {{ name_kr }}
-      <span style="font-size:16px;color:var(--gray);font-weight:400;margin-left:8px">{{ symbol }}</span>
+  <div style="margin-bottom:24px;display:flex;align-items:center;gap:14px">
+    <img src="https://assets.parqet.com/logos/symbol/{{ symbol }}"
+         alt="{{ symbol }}" width="44" height="44"
+         style="border-radius:10px;object-fit:contain;background:#f3f4f6;padding:2px;flex-shrink:0"
+         onerror="this.style.display='none'">
+    <div>
+      <div style="font-size:22px;font-weight:700">{{ name_kr }}</div>
+      <div style="font-size:14px;color:var(--gray);margin-top:2px">{{ symbol }}</div>
     </div>
   </div>
 
@@ -81,6 +85,33 @@
       <div class="card-sub">백만주 단위</div>
     </div>
   </div>
+
+  <!-- Short Interest 카드 -->
+  {% if short_pct or short_ratio %}
+  <div class="card mb24" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px">
+    <div>
+      <div class="card-label">공매도 잔량 (Float%)</div>
+      <div class="card-value {% if short_pct and short_pct >= 20 %}red{% else %}blue{% endif %}" style="font-size:22px">
+        {{ short_pct if short_pct else '—' }}{% if short_pct %}%{% endif %}
+      </div>
+      <div class="card-sub">FINRA 격주 공시 기준</div>
+    </div>
+    <div>
+      <div class="card-label">공매도 잔량 (주식수)</div>
+      <div class="card-value" style="font-size:18px">
+        {% if shares_short %}{{ (shares_short / 1_000_000) | round(1) }}M{% else %}—{% endif %}
+      </div>
+      <div class="card-sub">백만주 단위</div>
+    </div>
+    <div>
+      <div class="card-label">Days to Cover</div>
+      <div class="card-value {% if short_ratio and short_ratio >= 5 %}red{% endif %}" style="font-size:22px">
+        {{ short_ratio if short_ratio else '—' }}
+      </div>
+      <div class="card-sub">공매도 청산에 걸리는 일수</div>
+    </div>
+  </div>
+  {% endif %}
 
   <!-- 10거래일 막대 차트 -->
   <div class="card mb24">
