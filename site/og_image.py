@@ -11,9 +11,8 @@ from pathlib import Path
 
 try:
     from PIL import Image, ImageDraw, ImageFont
-except ImportError:
-    print("pillow 없음 — pip install pillow")
-    sys.exit(0)
+except ImportError as _pil_err:
+    raise ImportError("pillow 없음 — pip install pillow") from _pil_err
 
 W, H = 1200, 630
 OUT_DIR = Path(__file__).parent / "out"
