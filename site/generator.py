@@ -280,6 +280,40 @@ def build_sitemap(symbols: list[str], trade_date: str) -> None:
 
 # ── robots.txt ────────────────────────────────────────────────────────────────
 
+def build_rss(conn: sqlite3.Connection, trade_date: str) -> None:
+    """공매도 급증 TOP 20 RSS 피드 생성."""
+    from analyzer.ranking import surge_ranking
+    surge = surge_ranking(conn, trade_date, limit=20, min_total_volume=1_000_000, min_change=3.0)
+
+    items = []
+    for r in surge:
+        safe = r.symbol.replace("/", "-").replace("\\", "-")
+        name = get_kr_name(r.symbol, conn)
+        chg  = f"{r.change:+.1f}" if r.change is not None else "—"
+        items.append(f"""  <item>
+    <title>{name} ({r.symbol}) 공매도 {r.ratio}% ({chg}%p)</title>
+    <link>{SITE_URL}/stock/{safe}.html</link>
+    <guid>{SITE_URL}/stock/{safe}.html#{trade_date}</guid>
+    <pubDate>{trade_date}T00:00:00+00:00</pubDate>
+    <description>{name} ({r.symbol}) 공매도 비율 {r.ratio}%, 전일 대비 {chg}%p. FINRA 보고 기준.</description>
+  </item>""")
+
+    rss = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>숏스캔 — 공매도 급증 종목</title>
+    <link>{SITE_URL}/</link>
+    <description>FINRA 기준 미국 주식 공매도 급증 종목 TOP 20. 매일 업데이트.</description>
+    <language>ko</language>
+    <lastBuildDate>{trade_date}T00:00:00+00:00</lastBuildDate>
+    <atom:link href="{SITE_URL}/rss.xml" rel="self" type="application/rss+xml"/>
+{chr(10).join(items)}
+  </channel>
+</rss>"""
+    (OUT_DIR / "rss.xml").write_text(rss, encoding="utf-8")
+    print(f"  ✓ rss.xml  ({len(items)}개 항목)")
+
+
 def build_robots() -> None:
     content = f"""User-agent: *
 Allow: /
@@ -398,6 +432,7 @@ def main() -> None:
 
     # 검색 인덱스 + sitemap.xml + robots.txt
     build_search_index(conn, trade_date)
+    build_rss(conn, trade_date)
 
     conn.close()
 
