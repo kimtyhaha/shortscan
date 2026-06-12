@@ -139,9 +139,9 @@
     }
     .rank-item:last-child { border-bottom: none; }
     .rank-no  { font-size: 13px; color: var(--gray); width: 22px; text-align: right; flex-shrink: 0; }
-    .rank-symbol { font-size: 15px; font-weight: 700; width: 72px; flex-shrink: 0; }
-    .rank-name   { color: var(--gray); font-size: 13px; flex: 1; }
-    .rank-ratio  { font-size: 16px; font-weight: 700; color: var(--red); width: 52px; text-align: right; }
+    .rank-symbol { font-size: 15px; font-weight: 700; width: 60px; flex-shrink: 0; }
+    .rank-name   { color: var(--gray); font-size: 13px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rank-ratio  { font-size: 16px; font-weight: 700; color: var(--red); width: 52px; text-align: right; flex-shrink: 0; }
     .rank-badge  {
       font-size: 12px; font-weight: 700;
       padding: 2px 7px; border-radius: 12px;
@@ -149,7 +149,11 @@
       flex-shrink: 0;
     }
     .rank-badge.blue { background: var(--blue-bg); color: var(--blue); }
-    .rank-vol { font-size: 11px; color: var(--gray); width: 48px; text-align: right; flex-shrink: 0; }
+    .rank-vol { font-size: 11px; color: var(--gray); width: 40px; text-align: right; flex-shrink: 0; }
+    @media (max-width: 480px) {
+      .rank-vol { display: none; }
+      .rank-badge { font-size: 11px; padding: 2px 5px; }
+    }
 
     /* ── 알림 박스 ─────────────────────────── */
     .info-box {
