@@ -150,7 +150,19 @@
     }
     .rank-badge.blue { background: var(--blue-bg); color: var(--blue); }
     .rank-vol { font-size: 11px; color: var(--gray); width: 40px; text-align: right; flex-shrink: 0; }
-    @media (max-width: 480px) {
+    @media (max-width: 600px) {
+      .rank-item { flex-wrap: wrap; align-items: center; row-gap: 2px; }
+      .rank-name {
+        order: 10;
+        flex: 0 0 100%;
+        padding-left: 54px;
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: -2px;
+        margin-bottom: 2px;
+      }
       .rank-vol { display: none; }
       .rank-badge { font-size: 11px; padding: 2px 5px; }
     }
