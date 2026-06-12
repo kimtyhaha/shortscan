@@ -189,18 +189,48 @@ def fetch_fundamentals(conn: sqlite3.Connection, symbols: list[str],
     return saved
 
 
+def export_fundamentals_json(conn: sqlite3.Connection) -> int:
+    """stock_fundamentals DB → data/short_interest.json 내보내기."""
+    import json
+    rows = conn.execute(
+        """SELECT symbol, short_pct_float, shares_short, short_ratio
+           FROM stock_fundamentals
+           WHERE short_pct_float IS NOT NULL
+              OR shares_short IS NOT NULL
+              OR short_ratio IS NOT NULL
+           ORDER BY symbol"""
+    ).fetchall()
+    data = [
+        {"s": r[0], "p": r[1], "n": r[2], "r": r[3]}
+        for r in rows
+    ]
+    out = ROOT / "data" / "short_interest.json"
+    out.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
+    print(f"  ✓ short_interest.json 저장: {len(data)}개 종목")
+    return len(data)
+
+
 if __name__ == "__main__":
     import argparse
     from collector.database import connect
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--all", action="store_true", help="전체 재조회")
+    parser.add_argument("--all", action="store_true", help="전체 재조회 (force)")
+    parser.add_argument("--export", action="store_true", help="DB → JSON 내보내기만")
     args = parser.parse_args()
 
     conn = connect(DB_PATH)
+
+    if args.export:
+        export_fundamentals_json(conn)
+        conn.close()
+        raise SystemExit(0)
+
     syms = [
         r[0] for r in
         conn.execute("SELECT DISTINCT symbol FROM daily_short_volume").fetchall()
     ]
-    fetch_missing(conn, syms, force=args.all)
+
+    fetch_fundamentals(conn, syms, force=args.all)
+    export_fundamentals_json(conn)
     conn.close()
