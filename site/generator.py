@@ -278,6 +278,16 @@ Sitemap: {SITE_URL}/sitemap.xml
     print(f"  ✓ robots.txt")
 
 
+def build_redirects(symbols: list[str]) -> None:
+    """Cloudflare Pages clean URLs — /stock/TICKER → /stock/TICKER.html"""
+    lines = []
+    for sym in symbols:
+        safe = sym.replace("/", "-").replace("\\", "-")
+        lines.append(f"/stock/{safe}  /stock/{safe}.html  301")
+    (OUT_DIR / "_redirects").write_text("\n".join(lines), encoding="utf-8")
+    print(f"  ✓ _redirects  ({len(lines)}개 룰)")
+
+
 # ── 메인 ─────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -348,6 +358,7 @@ def main() -> None:
 
     build_sitemap(symbols, trade_date)
     build_robots()
+    build_redirects(symbols)
 
     print(f"\n✅ 완료 → {OUT_DIR}/index.html\n")
 
