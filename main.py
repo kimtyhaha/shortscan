@@ -53,7 +53,11 @@ def main() -> None:
     elif args.date:
         run_for_date(conn, datetime.strptime(args.date, "%Y%m%d").date())
     else:
-        run_for_date(conn, finra_daily.latest_business_day())
+        # 오늘 데이터 없으면 전 영업일 시도 (FINRA는 장 마감 2~4시간 후 게시)
+        today = finra_daily.latest_business_day()
+        if run_for_date(conn, today) == 0:
+            prev = finra_daily.latest_business_day(today - timedelta(days=1))
+            run_for_date(conn, prev)
 
     # ── 랭킹 산출 ──────────────────────────────────────────────────────────
     date_str = latest_trade_date(conn)
