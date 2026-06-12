@@ -56,7 +56,7 @@
       <img src="https://assets.parqet.com/logos/symbol/{{ symbol }}"
            alt="{{ symbol }}" width="44" height="44"
            style="border-radius:10px;object-fit:contain;background:#f3f4f6;padding:2px;flex-shrink:0"
-           onerror="this.style.display='none'">
+           onerror="logoFallback(this)">
       <div>
         <div style="font-size:22px;font-weight:700">{{ name_kr }}</div>
         <div style="font-size:14px;color:var(--gray);margin-top:2px">{{ symbol }}</div>
@@ -177,6 +177,20 @@
 
 {% block scripts %}
 <script>
+function logoFallback(el) {
+  var sym = el.alt || '';
+  var label = sym.replace(/[^A-Z]/g, '').slice(0, 2) || sym.slice(0, 2);
+  var palette = ['#e53935','#1976d2','#388e3c','#f57c00','#7b1fa2','#00838f','#c62828','#1565c0'];
+  var bg = palette[sym.charCodeAt(0) % palette.length];
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44">'
+    + '<rect width="44" height="44" rx="10" fill="' + bg + '"/>'
+    + '<text x="22" y="30" text-anchor="middle" font-family="Arial,sans-serif" '
+    + 'font-size="' + (label.length > 1 ? '15' : '20') + '" font-weight="700" fill="#fff">'
+    + label + '</text></svg>';
+  el.onerror = null;
+  el.src = 'data:image/svg+xml;base64,' + btoa(svg);
+}
+
 const labels = {{ labels | tojson | safe }};
 const values = {{ values | tojson | safe }};
 const colors = values.map((_, i) =>
