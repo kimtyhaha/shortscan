@@ -280,19 +280,20 @@
 <script src="/js/chart.min.js"></script>
 <script>
 function logoFallback(el) {
-  var sym = el.alt || el.dataset.sym || '';
-  var label = sym.replace(/[^A-Z0-9]/g, '').slice(0, 2) || '?';
-  var size = el.width || 44;
-  var fs = size <= 24 ? (label.length > 1 ? 9 : 12) : (label.length > 1 ? 15 : 20);
-  var cy = size <= 24 ? (label.length > 1 ? 16 : 17) : (label.length > 1 ? 30 : 30);
-  var rx = size <= 24 ? 6 : 10;
+  el.onerror = null;
+  var sym = (el.alt || el.dataset.sym || '').toUpperCase();
+  var label = sym.replace(/[^A-Z0-9]/g, '').slice(0, 2) || sym.slice(0, 2) || '?';
+  var size = parseInt(el.width) || 44;
+  var fs = size <= 28 ? (label.length > 1 ? 9 : 13) : (label.length > 1 ? 15 : 20);
+  var cy = size <= 28 ? Math.round(size * 0.65) : 30;
+  var rx = size <= 28 ? 6 : 10;
   var palette = ['#e53935','#1976d2','#388e3c','#f57c00','#7b1fa2','#00838f','#c62828','#1565c0'];
-  var bg = palette[sym.charCodeAt(0) % palette.length];
+  var code = sym.charCodeAt(0);
+  var bg = palette[(isNaN(code) ? 0 : code) % palette.length];
   var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + size + '" height="' + size + '">'
     + '<rect width="' + size + '" height="' + size + '" rx="' + rx + '" fill="' + bg + '"/>'
     + '<text x="' + (size/2) + '" y="' + cy + '" text-anchor="middle" font-family="Arial,sans-serif" '
     + 'font-size="' + fs + '" font-weight="700" fill="#fff">' + label + '</text></svg>';
-  el.onerror = null;
   el.src = 'data:image/svg+xml;base64,' + btoa(svg);
 }
 </script>
