@@ -194,6 +194,16 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
     safe_sym = symbol.replace("/", "-").replace("\\", "-")
     out_path = OUT_DIR / "stock" / f"{safe_sym}.html"
     out_path.write_text(html, encoding="utf-8")
+
+    # 종목별 OG 이미지
+    try:
+        from og_image import build_stock_og
+        og_path = OUT_DIR / "og" / f"{safe_sym}.png"
+        if not og_path.exists():
+            build_stock_og(symbol, name_kr, latest_ratio, change)
+    except Exception:
+        pass
+
     return True
 
 
@@ -338,6 +348,33 @@ def main() -> None:
     fetch_fundamentals(conn, symbols)
 
     print(f"\n🔨 사이트 생성 중... (기준일: {trade_date})")
+
+    # OG 이미지
+    try:
+        from og_image import build_main_og, build_stock_og
+        cur = conn.execute(
+            """SELECT AVG(CAST(short_volume AS REAL)/NULLIF(total_volume,0)*100),
+                      COUNT(*) FROM daily_short_volume WHERE trade_date=? AND total_volume>0""",
+            (trade_date,),
+        )
+        avg_r, _ = cur.fetchone()
+        surge_cur = conn.execute(
+            """WITH r AS (SELECT symbol, trade_date, total_volume,
+                      CAST(short_volume AS REAL)/NULLIF(total_volume,0)*100 AS ratio,
+                      LAG(CAST(short_volume AS REAL)/NULLIF(total_volume,0)*100)
+                          OVER (PARTITION BY symbol ORDER BY trade_date) AS prev
+                  FROM daily_short_volume)
+               SELECT COUNT(*) FROM r WHERE trade_date=? AND prev IS NOT NULL AND (ratio-prev)>=3
+                 AND total_volume>=1000000""",
+            (trade_date,),
+        )
+        surge_n = (surge_cur.fetchone() or [0])[0]
+        (OUT_DIR / "og").mkdir(exist_ok=True)
+        build_main_og(round(avg_r or 0, 1), surge_n, trade_date)
+        _og_available = True
+    except Exception as e:
+        print(f"  ⚠ OG 이미지 생성 실패: {e}")
+        _og_available = False
 
     # 메인 페이지
     build_index(conn, env, trade_date)

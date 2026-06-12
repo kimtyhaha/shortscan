@@ -16,10 +16,14 @@
   <meta property="og:title"       content="{% block og_title %}숏스캔 — 미국 주식 공매도 현황{% endblock %}">
   <meta property="og:description" content="{% block og_desc %}FINRA 데이터 기반 미국 주식 일별 공매도 비율. 급증 종목과 숏스퀴즈 후보를 매일 업데이트합니다.{% endblock %}">
   <meta property="og:url"         content="https://shortscan.pages.dev{% block og_url %}/{% endblock %}">
+  <meta property="og:image"       content="https://shortscan.pages.dev{% block og_image %}/og.png{% endblock %}">
+  <meta property="og:image:width"  content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:locale"      content="ko_KR">
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:image"       content="https://shortscan.pages.dev{% block tw_image %}/og.png{% endblock %}">
 
   <!-- Twitter Card -->
-  <meta name="twitter:card"        content="summary">
   <meta name="twitter:title"       content="{% block tw_title %}숏스캔 — 미국 주식 공매도 현황{% endblock %}">
   <meta name="twitter:description" content="{% block tw_desc %}FINRA 기반 일별 공매도 비율. 급증 종목·숏스퀴즈 후보 매일 업데이트.{% endblock %}">
 
@@ -237,6 +241,18 @@
     .mb24 { margin-bottom: 24px; }
     .ticker-link { text-decoration: none; color: var(--text); }
     .ticker-link:hover .rank-symbol { color: var(--blue); text-decoration: underline; }
+
+    /* ── SNS 공유 버튼 ─────────────────────── */
+    .share-bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:16px 0 0; }
+    .share-btn {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:7px 14px; border-radius:20px; font-size:12px; font-weight:600;
+      cursor:pointer; border:none; text-decoration:none; transition:opacity .15s;
+    }
+    .share-btn:hover { opacity:.85; }
+    .share-btn.twitter  { background:#000; color:#fff; }
+    .share-btn.kakao    { background:#FEE500; color:#3C1E1E; }
+    .share-btn.copy     { background:var(--bg); color:var(--text); border:1px solid var(--border); }
   </style>
   {% block head %}{% endblock %}
 </head>

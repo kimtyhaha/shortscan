@@ -9,6 +9,8 @@
 {% block og_title %}{{ name_kr }} ({{ symbol }}) 공매도 비율 {{ latest_ratio }}% — 숏스캔{% endblock %}
 {% block og_desc %}{{ name_kr }} 공매도 비율 {{ latest_ratio }}%, 전일 대비 {{ '%+.1f' | format(change) }}%p. {{ trade_date }} 기준 FINRA 데이터.{% endblock %}
 {% block og_url %}/stock/{{ symbol }}.html{% endblock %}
+{% block og_image %}/og/{{ symbol | replace('/', '-') }}.png{% endblock %}
+{% block tw_image %}/og/{{ symbol | replace('/', '-') }}.png{% endblock %}
 {% block tw_title %}{{ name_kr }} ({{ symbol }}) 공매도 {{ latest_ratio }}%{% endblock %}
 {% block tw_desc %}전일 대비 {{ '%+.1f' | format(change) }}%p · 10일 평균 {{ avg_ratio }}% · {{ trade_date }}{% endblock %}
 
@@ -87,14 +89,13 @@
   </div>
 
   <!-- Short Interest 카드 -->
-  {% if short_pct or short_ratio %}
   <div class="card mb24" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px">
     <div>
       <div class="card-label">공매도 잔량 (Float%)</div>
       <div class="card-value {% if short_pct and short_pct >= 20 %}red{% else %}blue{% endif %}" style="font-size:22px">
         {{ short_pct if short_pct else '—' }}{% if short_pct %}%{% endif %}
       </div>
-      <div class="card-sub">FINRA 격주 공시 기준</div>
+      <div class="card-sub">yfinance 공시 기준</div>
     </div>
     <div>
       <div class="card-label">공매도 잔량 (주식수)</div>
@@ -111,7 +112,6 @@
       <div class="card-sub">공매도 청산에 걸리는 일수</div>
     </div>
   </div>
-  {% endif %}
 
   <!-- 10거래일 막대 차트 -->
   <div class="card mb24">
@@ -160,6 +160,15 @@
     </table>
   </div>
 
+  <!-- 공유 버튼 -->
+  <div class="share-bar">
+    <span style="font-size:12px;color:var(--gray);font-weight:500">공유하기</span>
+    <a class="share-btn twitter" id="btn-twitter" href="#" target="_blank" rel="noopener">
+      𝕏 트위터
+    </a>
+    <button class="share-btn copy" onclick="copyLink()">🔗 링크 복사</button>
+  </div>
+
   <div class="warn-box">
     ⚠️ 본 데이터는 FINRA 보고 기준이며 장외(off-exchange) 보고 거래만 포함합니다. 전체 시장 공매도 비율과 다를 수 있으며, 투자 조언이 아닙니다.
   </div>
@@ -191,5 +200,22 @@ new Chart(document.getElementById('ratioChart'), {
     }
   }
 });
+
+// 공유 버튼
+(function() {
+  const url  = location.href;
+  const text = encodeURIComponent('{{ name_kr }} ({{ symbol }}) 공매도 비율 {{ latest_ratio }}% — 숏스캔');
+  const tw   = document.getElementById('btn-twitter');
+  if (tw) tw.href = 'https://twitter.com/intent/tweet?text=' + text + '&url=' + encodeURIComponent(url);
+})();
+
+function copyLink() {
+  navigator.clipboard.writeText(location.href).then(function() {
+    var btn = document.querySelector('.share-btn.copy');
+    var orig = btn.textContent;
+    btn.textContent = '✓ 복사됨';
+    setTimeout(function() { btn.textContent = orig; }, 1500);
+  });
+}
 </script>
 {% endblock %}
