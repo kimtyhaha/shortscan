@@ -72,6 +72,22 @@ jobs:
           echo "index.html: $(wc -c < site/out/index.html) bytes"
           echo "Stock pages: $(ls site/out/stock/ | wc -l)"
 
+      # ── float_shares JSON 업데이트 (다음 런에 영속화) ────────
+      - name: Export updated fundamentals JSON
+        run: python -m collector.fetch_names --export
+
+      - name: Commit updated short_interest.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f data/short_interest.json
+          git diff --cached --quiet || git commit -m "chore: update float_shares cache [skip ci]"
+
+      - name: Push updated JSON
+        run: git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # ── Cloudflare Pages 배포 ────────────────────────────────
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
