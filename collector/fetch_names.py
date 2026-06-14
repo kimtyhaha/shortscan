@@ -158,7 +158,14 @@ def fetch_fundamentals(conn: sqlite3.Connection, symbols: list[str],
                 "SELECT symbol FROM stock_fundamentals WHERE quote_type='ETF' AND float_shares IS NULL"
             ).fetchall()
         }
-        missing = [s for s in symbols if s not in cached or s in etf_no_float]
+        # quote_type 자체가 NULL인 종목 = 초기 조회 실패 → 재조회
+        fetch_failed = {
+            row[0] for row in
+            conn.execute(
+                "SELECT symbol FROM stock_fundamentals WHERE quote_type IS NULL"
+            ).fetchall()
+        }
+        missing = [s for s in symbols if s not in cached or s in etf_no_float or s in fetch_failed]
 
     if not missing:
         return 0
