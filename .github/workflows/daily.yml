@@ -20,6 +20,8 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: write
 
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -28,6 +30,8 @@ jobs:
       # ── 체크아웃 ─────────────────────────────────────────────
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # ── SQLite DB 캐시 (매일 누적) ──────────────────────────
       - name: Restore DB cache
@@ -84,9 +88,7 @@ jobs:
           git diff --cached --quiet || git commit -m "chore: update float_shares cache [skip ci]"
 
       - name: Push updated JSON
-        run: git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git push origin main
 
       # ── Cloudflare Pages 배포 ────────────────────────────────
       - name: Deploy to Cloudflare Pages
