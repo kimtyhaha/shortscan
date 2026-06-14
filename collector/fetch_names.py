@@ -158,7 +158,8 @@ def fetch_fundamentals(conn: sqlite3.Connection, symbols: list[str],
                 "SELECT symbol FROM stock_fundamentals WHERE quote_type='ETF' AND float_shares IS NULL"
             ).fetchall()
         }
-        # quote_type NULL = 초기 조회 실패 → 재조회 (FINRA 잔고 있는 것 우선, 최대 1000개)
+        # quote_type NULL = 초기 조회 실패 → 재조회
+        # FINRA 잔고 있고 최근 거래량 기준 상위 3000개만 (CI yfinance rate limit 방지)
         fetch_failed = {
             row[0] for row in
             conn.execute(
@@ -171,14 +172,21 @@ def fetch_fundamentals(conn: sqlite3.Connection, symbols: list[str],
                 "SELECT DISTINCT symbol FROM short_interest WHERE short_interest > 0"
             ).fetchall()
         }
-        fetch_failed_retry = sorted(fetch_failed & si_syms)[:1000]
+        dsv_vol = {
+            row[0]: row[1] for row in
+            conn.execute(
+                "SELECT symbol, MAX(total_volume) FROM daily_short_volume GROUP BY symbol"
+            ).fetchall()
+        }
+        pool = (fetch_failed & si_syms) & set(symbols)
+        fetch_failed_retry = sorted(pool, key=lambda s: dsv_vol.get(s, 0), reverse=True)[:3000]
         seen: set[str] = set()
         missing: list[str] = []
         for s in symbols:
             if s not in cached or s in etf_no_float:
                 seen.add(s); missing.append(s)
         for s in fetch_failed_retry:
-            if s in symbols and s not in seen:
+            if s not in seen:
                 seen.add(s); missing.append(s)
 
     if not missing:
