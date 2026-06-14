@@ -158,14 +158,28 @@ def fetch_fundamentals(conn: sqlite3.Connection, symbols: list[str],
                 "SELECT symbol FROM stock_fundamentals WHERE quote_type='ETF' AND float_shares IS NULL"
             ).fetchall()
         }
-        # quote_type 자체가 NULL인 종목 = 초기 조회 실패 → 재조회
+        # quote_type NULL = 초기 조회 실패 → 재조회 (FINRA 잔고 있는 것 우선, 최대 1000개)
         fetch_failed = {
             row[0] for row in
             conn.execute(
                 "SELECT symbol FROM stock_fundamentals WHERE quote_type IS NULL"
             ).fetchall()
         }
-        missing = [s for s in symbols if s not in cached or s in etf_no_float or s in fetch_failed]
+        si_syms = {
+            row[0] for row in
+            conn.execute(
+                "SELECT DISTINCT symbol FROM short_interest WHERE short_interest > 0"
+            ).fetchall()
+        }
+        fetch_failed_retry = sorted(fetch_failed & si_syms)[:1000]
+        seen: set[str] = set()
+        missing: list[str] = []
+        for s in symbols:
+            if s not in cached or s in etf_no_float:
+                seen.add(s); missing.append(s)
+        for s in fetch_failed_retry:
+            if s in symbols and s not in seen:
+                seen.add(s); missing.append(s)
 
     if not missing:
         return 0
