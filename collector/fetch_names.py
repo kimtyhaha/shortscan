@@ -92,16 +92,29 @@ def get_cached_name(conn: sqlite3.Connection, symbol: str) -> str | None:
 
 
 def _fetch_fundamentals(symbol: str) -> dict:
-    """yfinance로 Short Interest 관련 지표 조회."""
+    """yfinance로 Short Interest 관련 지표 조회.
+
+    ETF는 floatShares 없음 → totalAssets / navPrice 로 유통주식수 추정.
+    """
     try:
         import yfinance as yf
         info = yf.Ticker(symbol).info
+
+        float_shares = info.get("floatShares")
+
+        # ETF: floatShares 없으면 AUM / NAV 로 추정
+        if float_shares is None and info.get("quoteType") == "ETF":
+            total_assets = info.get("totalAssets")
+            nav = info.get("navPrice") or info.get("regularMarketPrice")
+            if total_assets and nav and nav > 0:
+                float_shares = int(total_assets / nav)
+
         return {
             "symbol":          symbol,
             "short_pct_float": info.get("shortPercentOfFloat"),
             "shares_short":    info.get("sharesShort"),
             "short_ratio":     info.get("shortRatio"),
-            "float_shares":    info.get("floatShares"),
+            "float_shares":    float_shares,
             "quote_type":      info.get("quoteType"),
         }
     except Exception:
@@ -138,7 +151,14 @@ def fetch_fundamentals(conn: sqlite3.Connection, symbols: list[str],
             row[0] for row in
             conn.execute("SELECT symbol FROM stock_fundamentals").fetchall()
         }
-        missing = [s for s in symbols if s not in cached]
+        # ETF 중 float_shares가 NULL인 것도 재조회 (AUM/NAV 추정 로직 적용)
+        etf_no_float = {
+            row[0] for row in
+            conn.execute(
+                "SELECT symbol FROM stock_fundamentals WHERE quote_type='ETF' AND float_shares IS NULL"
+            ).fetchall()
+        }
+        missing = [s for s in symbols if s not in cached or s in etf_no_float]
 
     if not missing:
         return 0
