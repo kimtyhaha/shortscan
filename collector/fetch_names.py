@@ -177,6 +177,7 @@ def fetch_fundamentals(conn: sqlite3.Connection, symbols: list[str],
         batch_idx = _dt.utcnow().timetuple().tm_yday % 12
         pool = sorted((fetch_failed & si_syms) & set(symbols))
         fetch_failed_retry = pool[batch_idx::12]
+        print(f"  → fetch_failed 배치: {batch_idx}/12, 대상 {len(fetch_failed_retry)}개 (풀 {len(pool)}개 중)")
         seen: set[str] = set()
         missing: list[str] = []
         for s in symbols:
