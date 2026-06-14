@@ -172,14 +172,11 @@ def fetch_fundamentals(conn: sqlite3.Connection, symbols: list[str],
                 "SELECT DISTINCT symbol FROM short_interest WHERE short_interest > 0"
             ).fetchall()
         }
-        dsv_vol = {
-            row[0]: row[1] for row in
-            conn.execute(
-                "SELECT symbol, MAX(total_volume) FROM daily_short_volume GROUP BY symbol"
-            ).fetchall()
-        }
-        pool = (fetch_failed & si_syms) & set(symbols)
-        fetch_failed_retry = sorted(pool, key=lambda s: dsv_vol.get(s, 0), reverse=True)[:3000]
+        # 매일 다른 배치(~950개) 처리 — 12일이면 전체 커버 (rate limit 방지)
+        from datetime import datetime as _dt
+        batch_idx = _dt.utcnow().timetuple().tm_yday % 12
+        pool = sorted((fetch_failed & si_syms) & set(symbols))
+        fetch_failed_retry = pool[batch_idx::12]
         seen: set[str] = set()
         missing: list[str] = []
         for s in symbols:
