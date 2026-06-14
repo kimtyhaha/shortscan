@@ -80,6 +80,7 @@
           <span class="rank-badge">+{{ r.change }}%p</span>
         </a>
         <span class="rank-vol">{{ r.total_volume | vol_fmt }}</span>
+        <span class="rank-short" title="공매잔량">{% if r.shares_short %}{{ r.shares_short | vol_fmt }}{% else %}—{% endif %}</span>
       </li>
       {% endfor %}
     </ul>
@@ -105,6 +106,7 @@
           <span class="rank-badge">+{{ r.change }}%p</span>
         </a>
         <span class="rank-vol">{{ r.total_volume | vol_fmt }}</span>
+        <span class="rank-short" title="공매잔량">{% if r.shares_short %}{{ r.shares_short | vol_fmt }}{% else %}—{% endif %}</span>
       </li>
       {% endfor %}
     </ul>
@@ -131,6 +133,7 @@
           <span class="rank-badge blue">{{ r.change }}%p</span>
         </a>
         <span class="rank-vol">{{ r.total_volume | vol_fmt }}</span>
+        <span class="rank-short" title="공매잔량">{% if r.shares_short %}{{ r.shares_short | vol_fmt }}{% else %}—{% endif %}</span>
       </li>
       {% endfor %}
     </ul>

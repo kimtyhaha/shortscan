@@ -18,6 +18,7 @@ from analyzer.ranking import (
     latest_trade_date, print_ranking,
 )
 from collector import database, finra_daily
+from collector.finra_short_interest import collect as collect_short_interest
 from collector.kr_names import get_kr_name
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -58,6 +59,10 @@ def main() -> None:
         if run_for_date(conn, today) == 0:
             prev = finra_daily.latest_business_day(today - timedelta(days=1))
             run_for_date(conn, prev)
+
+    # ── FINRA 공매잔고 (격주) ──────────────────────────────────────────────
+    print("\n📊 FINRA 공매잔고 수집 중...")
+    collect_short_interest(conn)
 
     # ── 랭킹 산출 ──────────────────────────────────────────────────────────
     date_str = latest_trade_date(conn)

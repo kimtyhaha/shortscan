@@ -107,9 +107,9 @@
     <div>
       <div class="card-label">공매도 잔량 (주식수)</div>
       <div class="card-value" style="font-size:18px">
-        {% if shares_short %}{{ (shares_short / 1_000_000) | round(1) }}M{% elif is_etf %}<span style="font-size:14px;color:var(--gray);background:#f3f4f6;padding:2px 8px;border-radius:4px">ETF</span>{% else %}—{% endif %}
+        {% if shares_short %}{{ shares_short | vol_fmt }}{% else %}—{% endif %}
       </div>
-      <div class="card-sub">백만주 단위</div>
+      <div class="card-sub">FINRA/yfinance 공시 기준</div>
     </div>
     <div>
       <div class="card-label">Days to Cover</div>

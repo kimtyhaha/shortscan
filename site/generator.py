@@ -159,7 +159,7 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
     name_kr = get_kr_name(symbol, conn)
     summary = generate_summary(name_kr, series)
 
-    # Short Interest
+    # Short Interest: yfinance(stock_fundamentals) 우선, 없으면 FINRA(short_interest) 사용
     fi = conn.execute(
         "SELECT short_pct_float, shares_short, short_ratio, quote_type FROM stock_fundamentals WHERE symbol=?",
         (symbol,),
@@ -168,6 +168,19 @@ def build_stock(conn: sqlite3.Connection, env: Environment,
     shares_short = fi[1] if fi else None
     short_ratio  = round(fi[2], 1) if fi and fi[2] else None
     is_etf       = bool(fi and fi[3] == "ETF")
+
+    # yfinance 데이터 없으면 FINRA consolidatedShortInterest 사용
+    if shares_short is None:
+        si = conn.execute(
+            """SELECT short_interest, avg_daily_volume, days_to_cover
+               FROM short_interest WHERE symbol=?
+               ORDER BY settlement_date DESC LIMIT 1""",
+            (symbol,),
+        ).fetchone()
+        if si and si[0]:
+            shares_short = si[0]
+            if short_ratio is None and si[2]:
+                short_ratio = round(si[2], 1)
 
     # 차트 레이블: MM/DD 형식
     labels = [d[5:] for d in dates]

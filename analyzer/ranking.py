@@ -22,6 +22,7 @@ class RankRow:
     ratio: float           # 공매도 비율 %
     change: float | None   # 전일 대비 %p (급증 랭킹만)
     total_volume: int
+    shares_short: int | None = None   # 공매잔량 (yfinance Short Interest)
     label: str = ""        # 숏스퀴즈 후보 라벨
 
 
@@ -42,16 +43,18 @@ def surge_ranking(
                           OVER (PARTITION BY symbol ORDER BY trade_date) AS prev_ratio
                FROM daily_short_volume
            )
-           SELECT symbol,
-                  ROUND(ratio, 1),
-                  ROUND(ratio - prev_ratio, 1),
-                  total_volume
-           FROM ranked
-           WHERE trade_date = ?
-             AND prev_ratio IS NOT NULL
-             AND total_volume >= ?
-             AND (ratio - prev_ratio) >= ?
-           ORDER BY (ratio - prev_ratio) DESC
+           SELECT r.symbol,
+                  ROUND(r.ratio, 1),
+                  ROUND(r.ratio - r.prev_ratio, 1),
+                  r.total_volume,
+                  f.shares_short
+           FROM ranked r
+           LEFT JOIN stock_fundamentals f ON r.symbol = f.symbol
+           WHERE r.trade_date = ?
+             AND r.prev_ratio IS NOT NULL
+             AND r.total_volume >= ?
+             AND (r.ratio - r.prev_ratio) >= ?
+           ORDER BY (r.ratio - r.prev_ratio) DESC
            LIMIT ?""",
         (trade_date, min_total_volume, min_change, limit),
     )
@@ -63,8 +66,9 @@ def surge_ranking(
             ratio=r,
             change=c,
             total_volume=v,
+            shares_short=ss,
         )
-        for i, (s, r, c, v) in enumerate(cur.fetchall())
+        for i, (s, r, c, v, ss) in enumerate(cur.fetchall())
     ]
 
 
@@ -77,14 +81,16 @@ def high_ratio_ranking(
 ) -> list[RankRow]:
     """당일 공매도 비율 절대값 상위 TOP N."""
     cur = conn.execute(
-        """SELECT symbol,
-                  ROUND(CAST(short_volume AS REAL) / NULLIF(total_volume, 0) * 100, 1),
-                  total_volume
-           FROM daily_short_volume
-           WHERE trade_date = ?
-             AND total_volume >= ?
-             AND CAST(short_volume AS REAL) / NULLIF(total_volume, 0) * 100 >= ?
-           ORDER BY CAST(short_volume AS REAL) / NULLIF(total_volume, 0) DESC
+        """SELECT d.symbol,
+                  ROUND(CAST(d.short_volume AS REAL) / NULLIF(d.total_volume, 0) * 100, 1),
+                  d.total_volume,
+                  f.shares_short
+           FROM daily_short_volume d
+           LEFT JOIN stock_fundamentals f ON d.symbol = f.symbol
+           WHERE d.trade_date = ?
+             AND d.total_volume >= ?
+             AND CAST(d.short_volume AS REAL) / NULLIF(d.total_volume, 0) * 100 >= ?
+           ORDER BY CAST(d.short_volume AS REAL) / NULLIF(d.total_volume, 0) DESC
            LIMIT ?""",
         (trade_date, min_total_volume, min_ratio, limit),
     )
@@ -96,8 +102,9 @@ def high_ratio_ranking(
             ratio=r,
             change=None,
             total_volume=v,
+            shares_short=ss,
         )
-        for i, (s, r, v) in enumerate(cur.fetchall())
+        for i, (s, r, v, ss) in enumerate(cur.fetchall())
     ]
 
 
@@ -127,17 +134,19 @@ def squeeze_candidates(
                           OVER (PARTITION BY symbol ORDER BY trade_date) AS prev_ratio
                FROM daily_short_volume
            )
-           SELECT symbol,
-                  ROUND(ratio, 1),
-                  ROUND(ratio - prev_ratio, 1),
-                  total_volume
-           FROM ranked
-           WHERE trade_date = ?
-             AND prev_ratio IS NOT NULL
-             AND total_volume >= ?
-             AND ratio >= ?
-             AND (ratio - prev_ratio) <= ?
-           ORDER BY ratio DESC
+           SELECT r.symbol,
+                  ROUND(r.ratio, 1),
+                  ROUND(r.ratio - r.prev_ratio, 1),
+                  r.total_volume,
+                  f.shares_short
+           FROM ranked r
+           LEFT JOIN stock_fundamentals f ON r.symbol = f.symbol
+           WHERE r.trade_date = ?
+             AND r.prev_ratio IS NOT NULL
+             AND r.total_volume >= ?
+             AND r.ratio >= ?
+             AND (r.ratio - r.prev_ratio) <= ?
+           ORDER BY r.ratio DESC
            LIMIT ?""",
         (trade_date, min_total_volume, high_ratio_threshold, drop_threshold, limit),
     )
@@ -149,9 +158,10 @@ def squeeze_candidates(
             ratio=r,
             change=c,
             total_volume=v,
+            shares_short=ss,
             label="🔥 숏스퀴즈 후보",
         )
-        for i, (s, r, c, v) in enumerate(cur.fetchall())
+        for i, (s, r, c, v, ss) in enumerate(cur.fetchall())
     ]
 
 
